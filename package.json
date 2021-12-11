@@ -1,5 +1,5 @@
 {
-  "name": "@cysync/database",
+  "name": "@cypherock/database",
   "version": "3.0.1",
   "description": "cypherock database wrapper",
   "main": "dist/index.js",
