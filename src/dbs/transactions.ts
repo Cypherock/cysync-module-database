@@ -418,8 +418,8 @@ export default class TransactionDB extends Service<Transaction> {
       this.emit('insert');
     } else {
       // Derive address from Xpub (It'll always give a mixed case address with checksum)
-      const myAddress = utils.HDNode.fromExtendedKey(xpub).derivePath(`0/0`)
-        .address;
+      const myAddress =
+        utils.HDNode.fromExtendedKey(xpub).derivePath(`0/0`).address;
 
       const amount = new BigNumber(txn.value);
       const fromAddr = txn.from;
