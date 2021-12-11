@@ -1,0 +1,14 @@
+image: node:latest
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - yarn install
+    - CI=false yarn build
+    - npm publish
+    - echo "-- build completed succesfully"
+  only:
+    - master
