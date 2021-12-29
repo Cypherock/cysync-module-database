@@ -23,8 +23,32 @@ export default class XpubDB extends Service<Xpub> {
   /**
    * returns a promise which resolves to a list of all xpubs in the database.
    */
-  public getAll = () => {
-    return this.db.find({}).exec();
+  public getAll = (
+    query?: {
+      xpub?: string;
+      zpub?: string;
+      walletId?: string;
+      coin?: boolean;
+    },
+    sorting?: {
+      sort: string;
+      order?: 'a' | 'd';
+    }
+  ) => {
+    let dbQuery: any = {};
+
+    if (query) {
+      dbQuery = { ...query };
+    }
+
+    if (sorting) {
+      return this.db
+        .find(dbQuery)
+        .sort({ [sorting.sort]: sorting.order === 'a' ? 1 : -1 })
+        .exec();
+    }
+
+    return this.db.find(dbQuery).exec();
   };
 
   /**
