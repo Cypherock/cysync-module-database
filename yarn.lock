@@ -23,7 +23,7 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@cypherock/communication@^3.0.1-beta.1":
+"@cypherock/communication@3.0.1-beta.1":
   version "3.0.1-beta.1"
   resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.1.tgz#aedae5954b4b980111dc2b3fb201d62647ebb866"
   integrity sha512-Tgzq5xVwUKESFGKS8+wX3NPjhgTD0oFuptHWh/TpSInrW/ECy8wr4vSfSc9WfMctlErolqm8aK0CfdWhmxs+sg==
@@ -31,10 +31,10 @@
     serialport "^10.0.2"
     winston "^3.3.3"
 
-"@cypherock/server-wrapper@^1.0.1-beta.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@cypherock/server-wrapper/-/server-wrapper-1.0.1.tgz#5bf78e114d99b28e7e03568b9536cc3a2b892070"
-  integrity sha512-ctSX5k1tw36vZt8qp9mwCMWhquvpGKUmmvStHNH97O9P4pjIlSJB+tUTXbIqGd+OfVzCcrwLQGFQUlpWtPdTCA==
+"@cypherock/server-wrapper@1.0.1-beta.1":
+  version "1.0.1-beta.1"
+  resolved "https://registry.yarnpkg.com/@cypherock/server-wrapper/-/server-wrapper-1.0.1-beta.1.tgz#d2d5ca9197340aec0687362b2f2be95e7d4dc8e1"
+  integrity sha512-qNu1WJG6HHMMWgBP77nu3wI3az/y6sHd2A8d1f+mgt4d47uqvMciKMRSylv5AOYM+L2sw2NlhQaSsf3rfQxraQ==
   dependencies:
     axios "^0.24.0"
     node-cache "^5.1.2"
