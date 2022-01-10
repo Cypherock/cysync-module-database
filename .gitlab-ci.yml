@@ -2,6 +2,7 @@ image: node:latest
 
 stages:
   - build
+  - build-beta
 
 build:
   stage: build
@@ -12,3 +13,12 @@ build:
     - echo "-- build completed succesfully"
   only:
     - master
+build-beta:
+  stage: build-beta
+  script:
+    - yarn install
+    - CI=false yarn build
+    - npm publish --tag beta
+    - echo "-- build completed succesfully"
+  only:
+    - beta
