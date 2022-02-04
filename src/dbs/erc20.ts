@@ -1,7 +1,6 @@
 import Service from '../module/database';
 import ERC20 from '../models/erc20token';
 import ERC20Token from '../models/erc20token';
-import { XpubDB } from '.';
 
 /**
  * Class for the Erc20 database. This db stores all the erc20 tokens with their last updated balances and their corresponding
@@ -96,7 +95,7 @@ export default class Erc20DB extends Service<ERC20> {
    * inserts a new token in the database.
    * @param xpub - the Xpub object
    */
-  public insert(token: ERC20Token) {
+  public async insert(token: ERC20Token) {
     return this.db
       .update(
         { walletId: token.walletId, coin: token.coin, ethCoin: token.ethCoin },
@@ -112,7 +111,7 @@ export default class Erc20DB extends Service<ERC20> {
    * deletes all tokens which correspond to a single wallet.
    * @param walletId
    */
-  public deleteWallet(walletId: string) {
+  public async deleteWallet(walletId: string) {
     return this.db
       .remove({ walletId }, { multi: true })
       .then(() => this.emit('delete'));
@@ -121,7 +120,7 @@ export default class Erc20DB extends Service<ERC20> {
   /**
    * deletes all the data from the database.
    */
-  public deleteAll(query?: {
+  public async deleteAll(query?: {
     walletId?: string;
     coin?: string;
     ethCoin?: string;
@@ -144,7 +143,7 @@ export default class Erc20DB extends Service<ERC20> {
    * @param walletId - the id of the wallet.
    * @param balance - the balance object.
    */
-  public updateBalance(coin: string, walletId: string, balance: string) {
+  public async updateBalance(coin: string, walletId: string, balance: string) {
     return this.db
       .update({ coin, walletId }, { $set: { balance } })
       .then(() => this.emit('update'));

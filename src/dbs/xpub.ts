@@ -80,7 +80,7 @@ export default class XpubDB extends Service<Xpub> {
    * inserts a new xpub in the database.
    * @param xpub - the Xpub object
    */
-  public insert(xpub: Xpub) {
+  public async insert(xpub: Xpub) {
     return this.db
       .update(
         { xpub: xpub.xpub, coin: xpub.coin },
@@ -95,7 +95,7 @@ export default class XpubDB extends Service<Xpub> {
    * @param xpub - the xpub in base58 format.
    * @param coin - the coin.
    */
-  public delete(xpub: string, coin: string) {
+  public async delete(xpub: string, coin: string) {
     return this.db.remove({ xpub, coin }).then(() => this.emit('delete'));
   }
 
@@ -103,7 +103,7 @@ export default class XpubDB extends Service<Xpub> {
    * deletes all xpubs which correspond to a single wallet.
    * @param walletId
    */
-  public deleteWallet(walletId: string) {
+  public async deleteWallet(walletId: string) {
     return this.db
       .remove({ walletId }, { multi: true })
       .then(() => this.emit('delete'));
@@ -112,7 +112,7 @@ export default class XpubDB extends Service<Xpub> {
   /**
    * deletes all the data from the database.
    */
-  public deleteAll() {
+  public async deleteAll() {
     return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
   }
 
@@ -125,7 +125,7 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin to be changed.
    * @param data - the data to be added.
    */
-  public updateByXpub(xpub: string, coin: any, data: any) {
+  public async updateByXpub(xpub: string, coin: any, data: any) {
     return this.db
       .update({ xpub, coin }, { $set: data })
       .then(() => this.emit('update'));
@@ -137,7 +137,7 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin.
    * @param balance - the balance object.
    */
-  public updateBalance(xpub: string, coin: string, balance: Object) {
+  public async updateBalance(xpub: string, coin: string, balance: object) {
     return this.db
       .update({ xpub, coin }, { $set: { balance } })
       .then(() => this.emit('update'));

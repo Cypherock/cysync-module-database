@@ -22,7 +22,7 @@ class PriceDB extends Service<Price> {
   /**
    * Inserts a new price to the database.
    */
-  public insert(
+  public async insert(
     coinType: Price['coin'],
     days: Price['days'],
     entries: Price['data']

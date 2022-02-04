@@ -84,7 +84,7 @@ export default class AddressDB extends Service<Address> {
    * inserts a new Address in the database.
    * @param address - the Address object
    */
-  public insert(address: Address) {
+  public async insert(address: Address) {
     return this.db
       .update(
         {
@@ -104,14 +104,14 @@ export default class AddressDB extends Service<Address> {
    * deletes an Address object from the database using the address.
    * @param address - the address
    */
-  public delete(address: string) {
+  public async delete(address: string) {
     return this.db.remove({ address }).then(() => this.emit('delete'));
   }
 
   /**
    * deletes all the data from the database.
    */
-  public deleteAll(query?: {
+  public async deleteAll(query?: {
     address?: string;
     xpub?: string;
     coinType?: string;

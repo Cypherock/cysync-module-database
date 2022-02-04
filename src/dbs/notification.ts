@@ -30,7 +30,6 @@ export default class NotificationDB extends Service<Notification> {
     totalLen: number = 0,
     items: number = 3
   ) {
-    // Fetch notifications from database
     const dbNotif = await this.db
       .find({})
       .sort({ createdAt: -1 })
@@ -64,7 +63,7 @@ export default class NotificationDB extends Service<Notification> {
     if (!isInDb) {
       const res = await NotificationServer.get(last.dbId, items);
       let serverLatestNotif = [];
-      let hasNext: boolean;
+      let hasNext: boolean = false;
 
       if (res.data.notifications) {
         serverLatestNotif = res.data.notifications;
@@ -72,7 +71,7 @@ export default class NotificationDB extends Service<Notification> {
       }
 
       const notifications = [];
-      let prevNotif: Notification;
+      let prevNotif: Notification | undefined;
       for (const notifData of serverLatestNotif) {
         const notif: Notification = {
           dbId: notifData._id,
@@ -106,7 +105,7 @@ export default class NotificationDB extends Service<Notification> {
 
       return { notifications, hasNext };
     } else {
-      // If data is from database then always show `hasNex` to allow user to
+      // If data is from database then always show `hasNext` to allow user to
       // check from server at the end of the list.
       return {
         notifications: dbNotif,
@@ -137,7 +136,7 @@ export default class NotificationDB extends Service<Notification> {
       hasNext = res.data.hasNext;
     }
 
-    let prevNotif: Notification;
+    let prevNotif: Notification | undefined;
     for (const notifData of serverLatestNotif) {
       const notif: Notification = {
         dbId: notifData._id,

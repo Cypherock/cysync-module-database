@@ -47,7 +47,7 @@ export default abstract class Database<T> {
   /**
    * Deletes all the entries
    */
-  public deleteAll() {
+  public async deleteAll() {
     return this.db.remove({}, { multi: true }).then(() => this.emit('detele'));
   }
 

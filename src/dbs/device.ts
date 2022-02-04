@@ -45,7 +45,7 @@ export default class DeviceDB extends Service<Device> {
    * inserts a new Device in the database.
    * @param device - the Device object
    */
-  public insert(device: Device) {
+  public async insert(device: Device) {
     return this.db
       .update(
         {
@@ -63,14 +63,14 @@ export default class DeviceDB extends Service<Device> {
    * deletes an Device object from the database using the serial.
    * @param serial - the serial
    */
-  public delete(serial: string) {
+  public async delete(serial: string) {
     return this.db.remove({ serial }).then(() => this.emit('delete'));
   }
 
   /**
    * deletes all the data from the database.
    */
-  public deleteAll() {
+  public async deleteAll() {
     return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
   }
 }

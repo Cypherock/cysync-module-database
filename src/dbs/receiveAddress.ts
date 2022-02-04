@@ -25,7 +25,7 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
    * inserts a new Address in the database.
    * @param address - the Address object
    */
-  public insert(address: ReceiveAddress) {
+  public async insert(address: ReceiveAddress) {
     return this.db
       .update(
         { walletId: address.walletId, coinType: address.coinType },
@@ -41,14 +41,14 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
    * deletes an Address object from the database using the address.
    * @param address - the address
    */
-  public delete(address: string) {
+  public async delete(address: string) {
     return this.db.remove({ address }).then(() => this.emit('delete'));
   }
 
   /**
    * deletes all the data from the database.
    */
-  public deleteAll(query?: {
+  public async deleteAll(query?: {
     walletId?: string;
     address?: string;
     coinType?: string;

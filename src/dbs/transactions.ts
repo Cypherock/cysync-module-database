@@ -1,4 +1,4 @@
-import { ALLCOINS, ERC20TOKENS, Erc20CoinData } from '@cypherock/communication';
+import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import Service from '../module/database';
@@ -221,7 +221,7 @@ export default class TransactionDB extends Service<Transaction> {
       } else if (txn.block_height) {
         const allTx = await this.db.find({ hash: txn.hash }).exec();
         if (allTx.length === 0) {
-          return null;
+          return 0;
         }
 
         const transaction = allTx[0];
@@ -281,7 +281,7 @@ export default class TransactionDB extends Service<Transaction> {
     }
 
     if (isBtcFork(coinType)) {
-      let myAddresses = [];
+      let myAddresses: string[] = [];
 
       if (addresses && addresses.length > 0) {
         myAddresses = addresses;
@@ -304,7 +304,7 @@ export default class TransactionDB extends Service<Transaction> {
       let sentReceive: SentReceive;
 
       if (txn.inputs && txn.inputs.length > 0) {
-        inputs = txn.inputs.map((elem, i) => {
+        inputs = txn.inputs.map((elem: any, i: number) => {
           return {
             address: elem.addresses ? elem.addresses[0] : '',
             value: String(elem.output_value),
@@ -317,7 +317,7 @@ export default class TransactionDB extends Service<Transaction> {
       }
 
       if (txn.outputs && txn.outputs.length > 0) {
-        outputs = txn.outputs.map((elem, i) => {
+        outputs = txn.outputs.map((elem: any, i: number) => {
           return {
             address: elem.addresses ? elem.addresses[0] : '',
             value: String(elem.value),
@@ -449,6 +449,11 @@ export default class TransactionDB extends Service<Transaction> {
       if (txn.isErc20Token) {
         token = txn.tokenAbbr;
 
+        if (!token) {
+          logger.warn('Token abbr is not present in ERC20 Transaction');
+          return;
+        }
+
         if (!ERC20TOKENS[token]) {
           logger.warn('Invalid tokenAbbr in transaction', { token });
           return;
@@ -534,7 +539,7 @@ export default class TransactionDB extends Service<Transaction> {
     }
 
     if (isBtcFork(coinType)) {
-      let myAddresses = [];
+      let myAddresses: string[] = [];
 
       if (addresses && addresses.length > 0) {
         myAddresses = addresses;
@@ -557,7 +562,7 @@ export default class TransactionDB extends Service<Transaction> {
       let sentReceive: SentReceive;
 
       if (txn.vin && txn.vin.length > 0) {
-        inputs = txn.vin.map((elem, i) => {
+        inputs = txn.vin.map((elem: any, i: number) => {
           return {
             address: elem.isAddress && elem.addresses ? elem.addresses[0] : '',
             value: String(elem.value),
@@ -571,7 +576,7 @@ export default class TransactionDB extends Service<Transaction> {
       }
 
       if (txn.vout && txn.vout.length > 0) {
-        outputs = txn.vout.map((elem, i) => {
+        outputs = txn.vout.map((elem: any, i: number) => {
           return {
             address: elem.isAddress && elem.addresses ? elem.addresses[0] : '',
             value: String(elem.value),
@@ -710,6 +715,11 @@ export default class TransactionDB extends Service<Transaction> {
       if (txn.isErc20Token) {
         token = txn.tokenAbbr;
 
+        if (!token) {
+          logger.warn('Token abbr is not present in ERC20 Transaction');
+          return;
+        }
+
         if (!ERC20TOKENS[token]) {
           logger.warn('Invalid tokenAbbr in transaction', { token });
           return;
@@ -766,7 +776,7 @@ export default class TransactionDB extends Service<Transaction> {
    * @param walletId - id of the wallet whose transactions are to be deleted
    * @param coin - coin abbr of the coin whose transactions are to be deleted
    */
-  public deleteByCoin(walletId: string, coin: string) {
+  public async deleteByCoin(walletId: string, coin: string) {
     return this.db.remove({ walletId, coin }, { multi: true }).then(() => {
       this.emit('delete');
     });
@@ -776,7 +786,7 @@ export default class TransactionDB extends Service<Transaction> {
    * deletes a particular transaction by it's hash
    * @param hash
    */
-  public delete(hash: string) {
+  public async delete(hash: string) {
     return this.db.remove({ hash }).then(() => this.emit('delete'));
   }
 
@@ -784,7 +794,7 @@ export default class TransactionDB extends Service<Transaction> {
    * deletes all transactions of a particular wallet
    * @param walletId - id of the wallet whose transactions are to be deleted.
    */
-  public deleteWallet(walletId: string) {
+  public async deleteWallet(walletId: string) {
     return this.db
       .remove({ walletId }, { multi: true })
       .then(() => this.emit('delete'));
@@ -793,7 +803,7 @@ export default class TransactionDB extends Service<Transaction> {
   /**
    * deletes all the transactions form the database
    */
-  public deleteAll() {
+  public async deleteAll() {
     return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
   }
 

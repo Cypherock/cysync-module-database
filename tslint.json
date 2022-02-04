@@ -1,51 +1,35 @@
 {
   "defaultSeverity": "error",
-  "extends": [
-    "tslint:recommended"
-  ],
-  "jsRules": {
-    "indent": [
-      true,
-      "spaces",
-      2
-    ],
-    "interface-name": [
-      true,
-      "never-prefix"
-    ],
-    "max-classes-per-file": true,
-    "no-bitwise": false,
-    "no-string-literal": false,
-    "no-var-requires": false,
-    "object-literal-sort-keys": false,
-    "quotemark": [
-      true,
-      "single",
-      "avoid-escape"
-    ],
-    "semicolon": [
-      true,
-      "never"
-    ],
-    "trailing-comma": [
-      false
-    ],
-    "triple-equals": [
-      true,
-      "allow-undefined-check"
-    ]
-  },
+  "extends": ["tslint:recommended"],
+  "jsRules": {},
   "rules": {
-    "no-console": false,
-    "comment-format": [
-      false
-    ],
+    "await-promise": true,
+    "no-bitwise": true,
+    "no-console": true,
+    "no-conditional-assignment": true,
+    "no-debugger": true,
+    "no-duplicate-super": true,
+    "no-empty": false,
+    "no-empty-interface": false,
+    "no-unused-expression": true,
+    "no-any": {
+      "severity": "warn"
+    },
+    "no-parameter-reassignment": true,
+    "no-var-keyword": true,
+    "use-isnan": true,
+    "comment-format": true,
     "variable-name": [
       true,
-      "ban-keywords",
       "check-format",
-      "allow-leading-underscore"
-    ]
+      "ban-keywords",
+      "allow-leading-underscore",
+      "allow-pascal-case"
+    ],
+    "jsx-no-lambda": false,
+    "array-type": [true, "array-simple"],
+    "jsx-boolean-value": false,
+    "prefer-for-of": false
   },
   "rulesDirectory": []
 }

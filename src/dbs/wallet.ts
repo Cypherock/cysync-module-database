@@ -61,7 +61,7 @@ export default class WalletDB extends Service<HardwareWallet> {
    * inserts a wallet into the database.
    * @param hardwareWallet
    */
-  public insert(hardwareWallet: HardwareWallet) {
+  public async insert(hardwareWallet: HardwareWallet) {
     return this.db
       .insert(this.createdDBObject(hardwareWallet))
       .then(() => this.emit('insert'));
@@ -71,14 +71,14 @@ export default class WalletDB extends Service<HardwareWallet> {
    * deletes a wallet with the corresponding wallet ID.
    * @param walletId
    */
-  public delete(walletId: string) {
+  public async delete(walletId: string) {
     return this.db.remove({ walletId }).then(() => this.emit('delete'));
   }
 
   /**
    * deletes all wallets from the database.
    */
-  public deleteAll() {
+  public async deleteAll() {
     return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
   }
 
@@ -86,7 +86,7 @@ export default class WalletDB extends Service<HardwareWallet> {
    * updates a wallet.
    * @param hardwareWallet - the hardware wallet object.
    */
-  public update(hardwareWallet: HardwareWallet) {
+  public async update(hardwareWallet: HardwareWallet) {
     return this.db
       .update(
         { walletId: hardwareWallet.walletId },
