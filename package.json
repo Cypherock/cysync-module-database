@@ -1,12 +1,11 @@
 {
   "name": "@cypherock/database",
-  "version": "3.0.1-beta.4",
+  "version": "3.0.1-beta.5",
   "description": "cypherock database wrapper",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "dev": "nodemon tsc",
     "start": "dist/index.js",
     "pretty": "prettier --write 'src/**/*.ts'",
     "lint": "tslint  -p tsconfig.json -c tslint.json --fix",
@@ -16,31 +15,27 @@
   "license": "ISC",
   "devDependencies": {
     "@types/nedb": "^1.8.12",
-    "@types/node": "^17.0.7",
+    "@types/node": "^17.0.15",
     "@types/serialport": "^8.0.2",
-    "eslint": "^8.6.0",
+    "eslint": "^8.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^4.2.5",
-    "nodemon": "^2.0.15",
+    "husky": "^7.0.4",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "tslint": "^6.1.2",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@cypherock/communication": "3.0.1-beta.6",
-    "@cypherock/server-wrapper": "1.0.1-beta.3",
+    "@cypherock/communication": "3.0.1-beta.7",
+    "@cypherock/server-wrapper": "1.0.1-beta.4",
     "@types/bignumber.js": "^5.0.0",
-    "@types/winston": "^2.4.4",
-    "axios": "^0.24.0",
     "bignumber.js": "^9.0.2",
     "ethereum-input-data-decoder": "^0.3.5",
-    "ethers": "^5.5.2",
+    "ethers": "^5.5.4",
     "events": "^3.3.0",
     "nedb": "^1.8.0",
-    "node-json-db": "^1.4.1",
-    "winston": "^3.3.3"
+    "winston": "^3.5.1"
   },
   "files": [
     "dist",
