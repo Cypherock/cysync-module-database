@@ -8,8 +8,9 @@
     "build": "rimraf dist && tsc",
     "start": "dist/index.js",
     "pretty": "prettier --write 'src/**/*.ts'",
-    "lint": "tslint  -p tsconfig.json -c tslint.json --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "tslint -p tsconfig.json -c tslint.json --fix",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "husky install"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +22,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.4",
+    "lint-staged": "^12.3.4",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "tslint": "^6.1.2",
@@ -37,13 +39,12 @@
     "nedb": "^1.8.0",
     "winston": "^3.5.1"
   },
-  "files": [
-    "dist",
-    "package.json"
-  ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run pretty && git add ."
-    }
+  "files": ["dist", "package.json"],
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "tslint -p tsconfig.json -c tslint.json --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": ["prettier --write"]
   }
 }

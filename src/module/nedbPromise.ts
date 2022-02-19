@@ -14,7 +14,7 @@ export default class NeDb<T> {
 
   public ensureIndex(options: DataStore.EnsureIndexOptions): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.ensureIndex(options, (error) => {
+      this.db.ensureIndex(options, error => {
         if (error) {
           reject(error);
           return;
@@ -27,7 +27,7 @@ export default class NeDb<T> {
 
   public removeIndex(fieldName: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.removeIndex(fieldName, (error) => {
+      this.db.removeIndex(fieldName, error => {
         if (error) {
           reject(error);
           return;

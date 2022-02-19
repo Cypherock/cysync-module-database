@@ -32,7 +32,7 @@ const logLevel = (level: number): void => {
 
 export default winston.createLogger({
   format: winston.format.combine(
-    winston.format((info) => {
+    winston.format(info => {
       let newInfo = { ...info };
 
       // If `toJSON` is present, timestamp fails to be added

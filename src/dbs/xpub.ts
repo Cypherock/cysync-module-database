@@ -14,7 +14,7 @@ export default class XpubDB extends Service<Xpub> {
   constructor(userDataPath = '') {
     super('xpubs', userDataPath, 'v1');
     // To remove previously created index
-    this.db.removeIndex('xpub').catch((error) => {
+    this.db.removeIndex('xpub').catch(error => {
       logger.error('Error in removing xpub index');
       logger.error(error);
     });
