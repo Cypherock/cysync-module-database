@@ -1,5 +1,5 @@
 import Service from '../module/database';
-import Xpub from '../models/xpub';
+import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
 
 /**
@@ -12,7 +12,7 @@ export default class XpubDB extends Service<Xpub> {
    * (Could be cypherock server, or any other server)
    */
   constructor(userDataPath = '') {
-    super('xpubs', userDataPath, 'v1');
+    super('xpubs', userDataPath, 'v2');
     // To remove previously created index
     this.db.removeIndex('xpub').catch((error) => {
       logger.error('Error in removing xpub index');
@@ -137,9 +137,45 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin.
    * @param balance - the balance object.
    */
-  public async updateBalance(xpub: string, coin: string, balance: object) {
+  public async updateXpubBalance(
+    xpub: string,
+    coin: string,
+    balance: XpubBalance
+  ) {
     return this.db
-      .update({ xpub, coin }, { $set: { balance } })
+      .update({ xpub, coin }, { $set: { xpubBalance: balance } })
+      .then(() => this.emit('update'));
+  }
+
+  /**
+   * updates the balance for a xpub.
+   * @param xpub - the xpub in base58 format.
+   * @param coin - the coin.
+   * @param balance - the balance object.
+   */
+  public async updateZpubBalance(
+    xpub: string,
+    coin: string,
+    balance: XpubBalance
+  ) {
+    return this.db
+      .update({ xpub, coin }, { $set: { zpubBalance: balance } })
+      .then(() => this.emit('update'));
+  }
+
+  /**
+   * updates the balance for a xpub.
+   * @param xpub - the xpub in base58 format.
+   * @param coin - the coin.
+   * @param balance - the balance object.
+   */
+  public async updateTotalBalance(
+    xpub: string,
+    coin: string,
+    balance: XpubBalance
+  ) {
+    return this.db
+      .update({ xpub, coin }, { $set: { totalBalance: balance } })
       .then(() => this.emit('update'));
   }
 }

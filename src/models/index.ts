@@ -2,6 +2,7 @@ export { default as HardwareWallet } from './hardwareWallet';
 export { default as Transaction } from './transaction';
 export * from './transaction';
 export { default as Xpub } from './xpub';
+export * from './xpub';
 export { default as Address } from './address';
 export { default as ReceiveAddress } from './receiveAddress';
 export { default as Notification } from './notification';
