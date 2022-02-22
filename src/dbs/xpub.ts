@@ -69,7 +69,7 @@ export default class XpubDB extends Service<Xpub> {
             temp.zpub = this.refEnDb.encryptData(output.zpub);
           }
         }
-        await this.db.update({walletId:output.walletId}, {$set: { xpub:temp.xpub, balance:temp.balance, zpub:temp.zpub }});
+        await this.db.update({walletId:output.walletId, coin:output.coin}, {$set: { xpub:temp.xpub, balance:temp.balance, zpub:temp.zpub }});
       }
     }
     return outputs;
@@ -199,6 +199,8 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin.
    */
   public async delete(xpub: string, coin: string) {
+    xpub = this.refEnDb? this.refEnDb.encryptData(xpub):xpub;
+    
     return this.db.remove({ xpub, coin }).then(() => this.emit('delete'));
   }
 

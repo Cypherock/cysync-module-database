@@ -31,7 +31,7 @@ export default class Erc20DB extends Service<ERC20> {
         throw "ref enDb is not defined";
       }
       if(flag){
-        await this.db.update({walletId:output.walletId}, {$set: {balance:this.refEnDb? this.refEnDb.encryptData(output.balance):output.balance}});
+        await this.db.update({walletId:output.walletId, coin:output.coin, ethCoin:output.ethCoin}, {$set: {balance:this.refEnDb? this.refEnDb.encryptData(output.balance):output.balance}});
       }
     }
     return outputs;
@@ -188,6 +188,10 @@ export default class Erc20DB extends Service<ERC20> {
     balance?: string;
   }) {
     let dbQuery: any = {};
+
+    if(query?.balance){
+      query.balance = this.refEnDb?this.refEnDb.encryptData(query.balance):query.balance;
+    }
 
     if (query) {
       dbQuery = { ...query };

@@ -35,8 +35,7 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
         if(this.refEnDb){
           temp = this.refEnDb.encryptData(output.address);
         }
-        
-        await this.db.update({address:output.address}, {$set: { address:temp }});
+        await this.db.update({address:output.address, walletId:output.walletId, coinType:output.coinType}, {$set: { address:temp }});
       }
     }
     return outputs;
@@ -96,6 +95,10 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
     coinType?: string;
   }) {
     let dbQuery: any = {};
+    
+    if(query?.address && this.refEnDb){
+      query.address = this.refEnDb.encryptData(query.address);
+    }
 
     if (query) {
       dbQuery = { ...query };

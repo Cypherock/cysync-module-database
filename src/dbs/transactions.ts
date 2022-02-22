@@ -36,14 +36,28 @@ export default class TransactionDB extends Service<Transaction> {
     if(!this.refEnDb){
       return false;
     }
+    
+    txn.amount = this.refEnDb.decryptData(txn.amount);
+    txn.hash = this.refEnDb.decryptData(txn.hash);
+
+    if(txn.fees){
+      txn.fees = this.refEnDb.decryptData(txn.fees);
+    }
+
+    if(txn.total){
+      txn.total = this.refEnDb.decryptData(txn.total);
+    }
+
     if(txn.outputs) {
       for(let output of txn.outputs){
         output.address = this.refEnDb.decryptData(output.address);
+        output.value = this.refEnDb.decryptData(output.value);
       }
     }
     if(txn.inputs) {
       for(let input of txn.inputs){
         input.address = this.refEnDb.decryptData(input.address);
+        input.value = this.refEnDb.decryptData(input.value);
       }
     }
     return true;
@@ -55,24 +69,41 @@ export default class TransactionDB extends Service<Transaction> {
         throw "ref enDb is not defined";
       }
       if(flag){
+        let [amount, hash, fees, total] = [txn.amount, txn.hash, txn.fees, txn.total]
         
+        if(this.refEnDb){
+          amount = this.refEnDb.encryptData(amount);
+          hash = this.refEnDb.encryptData(hash);
+          await this.db.update({hash:txn.hash}, {$set: { amount:amount, hash:hash}});
+          if(fees){
+            fees = this.refEnDb.encryptData(fees);
+            await this.db.update({hash}, {$set: {fees}});
+          }
+          if(total){
+            total = this.refEnDb.encryptData(total);
+            await this.db.update({hash}, {$set: {total}});
+          }
+        }
+
         if(txn.outputs) {
           let tempOut:InputOutput[] = {...txn.outputs};
           if(this.refEnDb){
             for(let output of tempOut){
               output.address = this.refEnDb.encryptData(output.address);
+              output.value = this.refEnDb.encryptData(output.value);
             }
           }
-          await this.db.update({hash:txn.hash}, {$set: { outputs:tempOut}});
+          await this.db.update({hash}, {$set: { outputs:tempOut}});
         }
         if(txn.inputs) {
           let tempIn:InputOutput[] = {...txn.inputs};
           if(this.refEnDb){
             for(let input of tempIn){
               input.address = this.refEnDb.encryptData(input.address);
+              input.value = this.refEnDb.encryptData(input.value);
             }
           }
-          await this.db.update({hash:txn.hash}, {$set: {inputs:tempIn }});
+          await this.db.update({hash}, {$set: {inputs:tempIn }});
         }
       }
     }
@@ -208,6 +239,32 @@ export default class TransactionDB extends Service<Transaction> {
    * @param txn - Transaction
    */
   public insert(txn: Transaction) {
+    
+    if(this.refEnDb){
+      if(txn.outputs){
+        for(let output of txn.outputs){
+          output.address = this.refEnDb.encryptData(output.address);
+          output.value = this.refEnDb.encryptData(output.value);
+        }
+      }
+      if(txn.inputs){
+        for(let input of txn.inputs){
+          input.address = this.refEnDb.encryptData(input.address);
+          input.value = this.refEnDb.encryptData(input.value);
+        }
+      }
+      txn.amount = this.refEnDb.encryptData(txn.amount);
+      //txn.hash = this.refEnDb.encryptData(txn.hash); expect encrypted hash in input.
+      //There is some problem in update/insert operations TBD : update
+
+      if(txn.fees){
+        txn.fees = this.refEnDb.encryptData(txn.fees);
+      }
+      if(txn.total){
+        txn.total = this.refEnDb.encryptData(txn.total);
+      }
+    }
+
     return (
       this.db
         // txn hash cannot be unique because the same txn can be in different wallet
@@ -231,11 +288,17 @@ export default class TransactionDB extends Service<Transaction> {
     if (!txn.hash) {
       return 0;
     }
+    
+    if (txn.coinType === 'eth' || txn.coinType === 'ethr') {
+      txn.hash = txn.hash.toLowerCase();
+    }
+
+    txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash;
 
     if (txn.coinType === 'eth' || txn.coinType === 'ethr') {
       this.db
         .update(
-          { hash: txn.hash.toLowerCase() },
+          { hash: txn.hash },
           {
             $set: {
               status: txn.isError ? 2 : 1,
@@ -432,17 +495,11 @@ export default class TransactionDB extends Service<Transaction> {
         if (input.isMine) {
           totalValue = totalValue.minus(new BigNumber(input.value));
         }
-        if(this.refEnDb){
-          input.address = this.refEnDb.encryptData(input.address);
-        }
       }
 
       for (const output of outputs) {
         if (output.isMine) {
           totalValue = totalValue.plus(new BigNumber(output.value));
-        }
-        if(this.refEnDb){
-          output.address = this.refEnDb.encryptData(output.address);
         }
       }
 
@@ -470,6 +527,8 @@ export default class TransactionDB extends Service<Transaction> {
         outputs
       };
 
+      txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash ;
+      
       // Update the confirmations of txns with same hash
       await this.db.update(
         { hash: txn.hash },
@@ -481,6 +540,9 @@ export default class TransactionDB extends Service<Transaction> {
           }
         }
       );
+      /**
+       * TBD:why insert after update.
+       */
       await this.insert(newTxn);
       this.emit('insert');
     } else {
@@ -492,7 +554,7 @@ export default class TransactionDB extends Service<Transaction> {
       const fromAddr = txn.from;
       const inputs: InputOutput[] = [
         {
-          address: this.refEnDb? this.refEnDb.encryptData(txn.from.toLowerCase()):txn.from.toLowerCase(),
+          address: txn.from.toLowerCase(),
           value: amount.toString(),
           isMine: txn.from.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -500,7 +562,7 @@ export default class TransactionDB extends Service<Transaction> {
       ];
       const outputs: InputOutput[] = [
         {
-          address: this.refEnDb? this.refEnDb.encryptData(txn.to.toLowerCase()):txn.to.toLowerCase(),
+          address: txn.to.toLowerCase(),
           value: amount.toString(),
           isMine: txn.to.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -696,17 +758,11 @@ export default class TransactionDB extends Service<Transaction> {
         if (input.isMine) {
           totalValue = totalValue.minus(new BigNumber(input.value));
         }
-        if(this.refEnDb){
-          input.address = this.refEnDb.encryptData(input.address);
-        }
       }
 
       for (const output of outputs) {
         if (output.isMine) {
           totalValue = totalValue.plus(new BigNumber(output.value));
-        }
-        if(this.refEnDb){
-          output.address = this.refEnDb.encryptData(output.address);
         }
       }
 
@@ -740,6 +796,7 @@ export default class TransactionDB extends Service<Transaction> {
         outputs
       };
 
+      txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash ;
       // Update the confirmations of txns with same hash
       await this.db.update(
         { hash: txn.txid },
@@ -751,6 +808,9 @@ export default class TransactionDB extends Service<Transaction> {
           }
         }
       );
+      /**
+       * TBD: why is insert called after update for same txn hash.
+       */
       await this.insert(newTxn);
       this.emit('insert');
     } else {
@@ -762,7 +822,7 @@ export default class TransactionDB extends Service<Transaction> {
       const fromAddr = txn.from;
       const inputs: InputOutput[] = [
         {
-          address: this.refEnDb? this.refEnDb.encryptData(txn.from.toLowerCase()):txn.from.toLowerCase(),
+          address: txn.from.toLowerCase(),
           value: amount.toString(),
           isMine: txn.from.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -770,7 +830,7 @@ export default class TransactionDB extends Service<Transaction> {
       ];
       const outputs: InputOutput[] = [
         {
-          address: this.refEnDb? this.refEnDb.encryptData(txn.to.toLowerCase()):txn.to.toLowerCase(),
+          address: txn.to.toLowerCase(),
           value: amount.toString(),
           isMine: txn.to.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -858,6 +918,9 @@ export default class TransactionDB extends Service<Transaction> {
    * @param hash
    */
   public async delete(hash: string) {
+    
+    hash = this.refEnDb? this.refEnDb.encryptData(hash) : hash;
+
     return this.db.remove({ hash }).then(() => this.emit('delete'));
   }
 
