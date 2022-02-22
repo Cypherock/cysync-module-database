@@ -2,6 +2,7 @@ import DataStore from 'nedb';
 import { EventEmitter } from 'events';
 
 import NedbPromise from './nedbPromise';
+import PassEncrypt from './../dbs/passHash';
 
 /**
  * abstract class to initiate the database.
@@ -11,6 +12,7 @@ export default abstract class Database<T> {
   public db: NedbPromise<T>;
   public emitter = new EventEmitter();
   public databaseVersion: string | undefined;
+  protected refEnDb:PassEncrypt | undefined;
 
   /**
    * initiates the nedb database and calls the super constructor
@@ -22,7 +24,8 @@ export default abstract class Database<T> {
   protected constructor(
     database: string,
     userDataPath = '',
-    databaseVersion?: string
+    databaseVersion?: string,
+    enDb?:PassEncrypt
   ) {
     this.dbName = database;
     this.db = new NedbPromise(
@@ -33,6 +36,7 @@ export default abstract class Database<T> {
       })
     );
     this.databaseVersion = databaseVersion;
+    this.refEnDb = enDb;
   }
 
   /**

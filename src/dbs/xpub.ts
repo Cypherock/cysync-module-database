@@ -3,39 +3,73 @@ import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
 import PassEncrypt from './passHash';
 
+
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.
  */
 export default class XpubDB extends Service<Xpub> {
-  private refEnDb:PassEncrypt;
+
   /**
    *  Calls the super constructor with the database name and the base URL to fetch the latest balances.
    * (Could be cypherock server, or any other server)
    */
-  constructor(userDataPath = '') {
-    super('xpubs', userDataPath, 'v2');
+  constructor(userDataPath = '', EnDb:PassEncrypt) {
+    super('xpubs', userDataPath, 'v2', EnDb);
     // To remove previously created index
     this.db.removeIndex('xpub').catch(error => {
       logger.error('Error in removing xpub index');
       logger.error(error);
     });
-    this.refEnDb = EnDb;
   }
 
   public updatePostEn(output:Xpub){
-    output.balance = this.refEnDb.decryptData(output.balance);
+    if(!this.refEnDb){
+      return false;
+    }
+    output.totalBalance.balance = this.refEnDb.decryptData(output.totalBalance.balance);
+    output.totalBalance.unconfirmedBalance = this.refEnDb.decryptData(output.totalBalance.unconfirmedBalance);
+
+    output.xpubBalance.balance = this.refEnDb.decryptData(output.xpubBalance.balance);
+    output.xpubBalance.unconfirmedBalance = this.refEnDb.decryptData(output.xpubBalance.unconfirmedBalance);
+
+    if(output.zpubBalance){
+      output.zpubBalance.balance = this.refEnDb.decryptData(output.zpubBalance.balance);
+      output.zpubBalance.unconfirmedBalance = this.refEnDb.decryptData(output.zpubBalance.unconfirmedBalance);  
+    }
+
     output.xpub = this.refEnDb.decryptData(output.xpub);
     if(output.zpub){
       output.zpub = this.refEnDb.decryptData(output.zpub);
     }
+    return true;
   }
 
   public async updatePostEnAll(outputs:Xpub[], flag?:boolean){
     for(let output of outputs){
-      this.updatePostEn(output);
+      if(!this.updatePostEn(output)){
+        throw "ref enDb is not defined";
+      }
       if(flag){
-        await this.db.update({walletId:output.walletId}, {$set: { xpub:output.xpub, balance:output.balance, zpub:output.zpub }});
+        let temp:Xpub = {...output};
+        if(this.refEnDb){
+          temp.xpubBalance.balance = this.refEnDb.encryptData(temp.xpubBalance.balance);
+          temp.xpubBalance.unconfirmedBalance = this.refEnDb.encryptData(temp.xpubBalance.unconfirmedBalance);
+          
+          if(temp.zpubBalance){
+            temp.zpubBalance.balance = this.refEnDb.encryptData(temp.zpubBalance.balance);
+            temp.zpubBalance.unconfirmedBalance = this.refEnDb.encryptData(temp.zpubBalance.unconfirmedBalance);
+          }
+    
+          temp.totalBalance.balance = this.refEnDb.encryptData(temp.xpubBalance.balance);
+          temp.totalBalance.unconfirmedBalance = this.refEnDb.encryptData(temp.xpubBalance.unconfirmedBalance);
+    
+          temp.xpub = this.refEnDb.encryptData(output.xpub);
+          if(output.zpub){
+            temp.zpub = this.refEnDb.encryptData(output.zpub);
+          }
+        }
+        await this.db.update({walletId:output.walletId}, {$set: { xpub:temp.xpub, balance:temp.balance, zpub:temp.zpub }});
       }
     }
     return outputs;
@@ -131,10 +165,23 @@ export default class XpubDB extends Service<Xpub> {
    * @param xpub - the Xpub object
    */
   public async insert(xpub: Xpub) {
-    xpub.balance = this.refEnDb.encryptData(xpub.balance.toString());
-    xpub.xpub = this.refEnDb.encryptData(xpub.xpub);
-    if(xpub.zpub){
-      xpub.zpub = this.refEnDb.encryptData(xpub.zpub);
+
+    if(this.refEnDb){
+      xpub.xpubBalance.balance = this.refEnDb.encryptData(xpub.xpubBalance.balance);
+      xpub.xpubBalance.unconfirmedBalance = this.refEnDb.encryptData(xpub.xpubBalance.unconfirmedBalance);
+      
+      if(xpub.zpubBalance){
+        xpub.zpubBalance.balance = this.refEnDb.encryptData(xpub.zpubBalance.balance);
+        xpub.zpubBalance.unconfirmedBalance = this.refEnDb.encryptData(xpub.zpubBalance.unconfirmedBalance);
+      }
+
+      xpub.totalBalance.balance = this.refEnDb.encryptData(xpub.xpubBalance.balance);
+      xpub.totalBalance.unconfirmedBalance = this.refEnDb.encryptData(xpub.xpubBalance.unconfirmedBalance);
+
+      xpub.xpub = this.refEnDb.encryptData(xpub.xpub);
+      if(xpub.zpub){
+        xpub.zpub = this.refEnDb.encryptData(xpub.zpub);
+      }
     }
 
     return this.db
@@ -182,6 +229,9 @@ export default class XpubDB extends Service<Xpub> {
    * @param data - the data to be added.
    */
   public async updateByXpub(xpub: string, coin: any, data: any) {
+    if(this.refEnDb){
+      xpub = this.refEnDb.encryptData(xpub);
+    }
     return this.db
       .update({ xpub, coin }, { $set: data })
       .then(() => this.emit('update'));
@@ -193,11 +243,14 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin.
    * @param balance - the balance object.
    */
-  public async updateXpubBalance(
-    xpub: string,
-    coin: string,
-    balance: XpubBalance
-  ) {
+
+  public async updateBalance(xpub: string, coin: string, balance: XpubBalance) {
+    if(this.refEnDb){
+      xpub = this.refEnDb.encryptData(xpub);
+      balance.balance = this.refEnDb.encryptData(balance.balance);
+      balance.unconfirmedBalance = this.refEnDb.encryptData(balance.unconfirmedBalance);
+    }
+
     return this.db
       .update({ xpub, coin }, { $set: { xpubBalance: balance } })
       .then(() => this.emit('update'));
@@ -214,6 +267,12 @@ export default class XpubDB extends Service<Xpub> {
     coin: string,
     balance: XpubBalance
   ) {
+    if(this.refEnDb){
+      xpub = this.refEnDb.encryptData(xpub);
+      balance.balance = this.refEnDb.encryptData(balance.balance);
+      balance.unconfirmedBalance = this.refEnDb.encryptData(balance.unconfirmedBalance);
+    }
+
     return this.db
       .update({ xpub, coin }, { $set: { zpubBalance: balance } })
       .then(() => this.emit('update'));
@@ -230,6 +289,12 @@ export default class XpubDB extends Service<Xpub> {
     coin: string,
     balance: XpubBalance
   ) {
+    if(this.refEnDb){
+      xpub = this.refEnDb.encryptData(xpub);
+      balance.balance = this.refEnDb.encryptData(balance.balance);
+      balance.unconfirmedBalance = this.refEnDb.encryptData(balance.unconfirmedBalance);
+    }
+
     return this.db
       .update({ xpub, coin }, { $set: { totalBalance: balance } })
       .then(() => this.emit('update'));

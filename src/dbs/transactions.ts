@@ -5,6 +5,7 @@ import Service from '../module/database';
 import Transaction, { InputOutput, SentReceive } from '../models/transaction';
 import AddressDB from './address';
 import logger from '../utils/logger';
+import PassEncrypt from "./passHash";
 
 const isBtcFork = (coinStr: string) => {
   const coin = ALLCOINS[coinStr.toLowerCase()];
@@ -27,16 +28,64 @@ export default class TransactionDB extends Service<Transaction> {
    *  Calls the super constructor with the database name and the base URL to fetch last transactions.
    * (Could be cypherock server, or any other server)
    */
-  constructor(userDataPath = '') {
-    super('transactions', userDataPath, 'v1');
+  constructor(userDataPath = '', enDb:PassEncrypt) {
+    super('transactions', userDataPath, 'v1', enDb);
   }
+
+  public updatePostEn(txn:Transaction){
+    if(!this.refEnDb){
+      return false;
+    }
+    if(txn.outputs) {
+      for(let output of txn.outputs){
+        output.address = this.refEnDb.decryptData(output.address);
+      }
+    }
+    if(txn.inputs) {
+      for(let input of txn.inputs){
+        input.address = this.refEnDb.decryptData(input.address);
+      }
+    }
+    return true;
+  }
+
+  public async updatePostEnAll(txns:Transaction[], flag?:boolean){
+    for(let txn of txns){
+      if(!this.updatePostEn(txn)){
+        throw "ref enDb is not defined";
+      }
+      if(flag){
+        
+        if(txn.outputs) {
+          let tempOut:InputOutput[] = {...txn.outputs};
+          if(this.refEnDb){
+            for(let output of tempOut){
+              output.address = this.refEnDb.encryptData(output.address);
+            }
+          }
+          await this.db.update({hash:txn.hash}, {$set: { outputs:tempOut}});
+        }
+        if(txn.inputs) {
+          let tempIn:InputOutput[] = {...txn.inputs};
+          if(this.refEnDb){
+            for(let input of tempIn){
+              input.address = this.refEnDb.encryptData(input.address);
+            }
+          }
+          await this.db.update({hash:txn.hash}, {$set: {inputs:tempIn }});
+        }
+      }
+    }
+    return txns;
+  }
+
 
   /**
    * Gets all transactions from the local database.
    *
    * @return promise that resolves to a list of transactions
    */
-  public getAll = (
+  public getAll = async (
     query?: {
       walletId?: string;
       hash?: string;
@@ -128,7 +177,14 @@ export default class TransactionDB extends Service<Transaction> {
         .exec();
     }
 
-    return this.db.find(dbQuery).exec();
+    let outputs = await this.db.find(dbQuery).exec();
+    try{
+      this.updatePostEnAll(outputs);
+      return outputs;
+     }catch(e){
+       logger.error(e);
+     }
+     return null;
   };
 
   /**
@@ -136,8 +192,15 @@ export default class TransactionDB extends Service<Transaction> {
    * @param walletId - id of the wallet whose transactions are to be retrieved
    * @return promise that resolves to a list of transactions
    */
-  public getByWalletId(walletId: string) {
-    return this.db.find({ walletId });
+  public async getByWalletId(walletId: string) {
+    let outputs = await this.db.find({ walletId }).exec();
+    try{
+      this.updatePostEnAll(outputs);
+      return outputs;
+     }catch(e){
+       logger.error(e);
+     }
+     return null;
   }
 
   /**
@@ -369,11 +432,17 @@ export default class TransactionDB extends Service<Transaction> {
         if (input.isMine) {
           totalValue = totalValue.minus(new BigNumber(input.value));
         }
+        if(this.refEnDb){
+          input.address = this.refEnDb.encryptData(input.address);
+        }
       }
 
       for (const output of outputs) {
         if (output.isMine) {
           totalValue = totalValue.plus(new BigNumber(output.value));
+        }
+        if(this.refEnDb){
+          output.address = this.refEnDb.encryptData(output.address);
         }
       }
 
@@ -423,7 +492,7 @@ export default class TransactionDB extends Service<Transaction> {
       const fromAddr = txn.from;
       const inputs: InputOutput[] = [
         {
-          address: txn.from.toLowerCase(),
+          address: this.refEnDb? this.refEnDb.encryptData(txn.from.toLowerCase()):txn.from.toLowerCase(),
           value: amount.toString(),
           isMine: txn.from.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -431,7 +500,7 @@ export default class TransactionDB extends Service<Transaction> {
       ];
       const outputs: InputOutput[] = [
         {
-          address: txn.to.toLowerCase(),
+          address: this.refEnDb? this.refEnDb.encryptData(txn.to.toLowerCase()):txn.to.toLowerCase(),
           value: amount.toString(),
           isMine: txn.to.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -627,11 +696,17 @@ export default class TransactionDB extends Service<Transaction> {
         if (input.isMine) {
           totalValue = totalValue.minus(new BigNumber(input.value));
         }
+        if(this.refEnDb){
+          input.address = this.refEnDb.encryptData(input.address);
+        }
       }
 
       for (const output of outputs) {
         if (output.isMine) {
           totalValue = totalValue.plus(new BigNumber(output.value));
+        }
+        if(this.refEnDb){
+          output.address = this.refEnDb.encryptData(output.address);
         }
       }
 
@@ -687,7 +762,7 @@ export default class TransactionDB extends Service<Transaction> {
       const fromAddr = txn.from;
       const inputs: InputOutput[] = [
         {
-          address: txn.from.toLowerCase(),
+          address: this.refEnDb? this.refEnDb.encryptData(txn.from.toLowerCase()):txn.from.toLowerCase(),
           value: amount.toString(),
           isMine: txn.from.toLowerCase() === myAddress.toLowerCase(),
           index: 0
@@ -695,7 +770,7 @@ export default class TransactionDB extends Service<Transaction> {
       ];
       const outputs: InputOutput[] = [
         {
-          address: txn.to.toLowerCase(),
+          address: this.refEnDb? this.refEnDb.encryptData(txn.to.toLowerCase()):txn.to.toLowerCase(),
           value: amount.toString(),
           isMine: txn.to.toLowerCase() === myAddress.toLowerCase(),
           index: 0
