@@ -406,6 +406,11 @@ export default class TransactionDB extends Service<Transaction> {
       }
     }
 
+    /**
+     * This should be done in insert but update is called before it.
+     */
+    txn.hash = this.refEnDb?this.refEnDb.encryptData(txn.hash):txn.hash;
+
     if (isBtcFork(coinType)) {
       let myAddresses: string[] = [];
 
@@ -527,8 +532,7 @@ export default class TransactionDB extends Service<Transaction> {
         outputs
       };
 
-      txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash ;
-      
+
       // Update the confirmations of txns with same hash
       await this.db.update(
         { hash: txn.hash },
@@ -667,6 +671,8 @@ export default class TransactionDB extends Service<Transaction> {
       }
     }
 
+    txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash ;
+
     if (isBtcFork(coinType)) {
       let myAddresses: string[] = [];
 
@@ -796,7 +802,6 @@ export default class TransactionDB extends Service<Transaction> {
         outputs
       };
 
-      txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash ;
       // Update the confirmations of txns with same hash
       await this.db.update(
         { hash: txn.txid },
