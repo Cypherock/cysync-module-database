@@ -1,12 +1,14 @@
 import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
+import PassEncrypt from './passHash';
 
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.
  */
 export default class XpubDB extends Service<Xpub> {
+  private refEnDb:PassEncrypt;
   /**
    *  Calls the super constructor with the database name and the base URL to fetch the latest balances.
    * (Could be cypherock server, or any other server)
@@ -18,12 +20,31 @@ export default class XpubDB extends Service<Xpub> {
       logger.error('Error in removing xpub index');
       logger.error(error);
     });
+    this.refEnDb = EnDb;
+  }
+
+  public updatePostEn(output:Xpub){
+    output.balance = this.refEnDb.decryptData(output.balance);
+    output.xpub = this.refEnDb.decryptData(output.xpub);
+    if(output.zpub){
+      output.zpub = this.refEnDb.decryptData(output.zpub);
+    }
+  }
+
+  public async updatePostEnAll(outputs:Xpub[], flag?:boolean){
+    for(let output of outputs){
+      this.updatePostEn(output);
+      if(flag){
+        await this.db.update({walletId:output.walletId}, {$set: { xpub:output.xpub, balance:output.balance, zpub:output.zpub }});
+      }
+    }
+    return outputs;
   }
 
   /**
    * returns a promise which resolves to a list of all xpubs in the database.
    */
-  public getAll = (
+  public getAll = async (
     query?: {
       xpub?: string;
       zpub?: string;
@@ -48,32 +69,61 @@ export default class XpubDB extends Service<Xpub> {
         .exec();
     }
 
-    return this.db.find(dbQuery).exec();
+    let outputs:Xpub[] = await this.db.find(dbQuery).exec();
+    try{
+      this.updatePostEnAll(outputs);
+      return outputs;
+     }catch(e){
+       logger.error(e);
+     }
+     return null;
   };
 
   /**
    * returns a promise which resolves to a list of xpubs of a specific coin.
    * @param coin - the coin abbr whose xpubs is to be retrieved
    */
-  public getByCoin = (coin: string) => {
-    return this.db.find({ coin }).exec();
-  };
+  public getByCoin = async (coin: string) => {
+    let outputs:Xpub[] = await this.db.find({ coin }).exec();
+    try{
+      this.updatePostEnAll(outputs);
+      return outputs;
+     }catch(e){
+       logger.error(e);
+     }
+   return null;
+ };
 
   /**
    * returns a promise which resolves to a list of xpubs from a specific wallet.
    * @param walletId - the ID of the wallet whose xpubs are to be retrieved.
    */
-  public getByWalletId(walletId: string) {
-    return this.db.find({ walletId }).exec();
+  public async getByWalletId(walletId: string) {
+    let outputs:Xpub[] = await this.db.find({ walletId }).exec();
+     try{
+       this.updatePostEnAll(outputs);
+       return outputs;
+      }catch(e){
+        logger.error(e);
+      }
+    return null;
   }
+
 
   /**
    * returns a promise which resolves to an xpub from a specific wallet of a specific coin.
    * @param walletId - the ID of the wallet whose xpub is to be retrieved.
    * @param coin - the coin whose xpub is to be retrieved.
    */
-  public getByWalletIdandCoin(walletId: string, coin: string) {
-    return this.db.findOne({ walletId, coin });
+  public async getByWalletIdandCoin(walletId: string, coin: string) {
+    let output = await this.db.findOne({ walletId, coin });
+    try{
+      this.updatePostEn(output);
+      return output;
+    }catch(e){
+      logger.error(e);
+    }
+    return null;
   }
 
   /**
@@ -81,6 +131,12 @@ export default class XpubDB extends Service<Xpub> {
    * @param xpub - the Xpub object
    */
   public async insert(xpub: Xpub) {
+    xpub.balance = this.refEnDb.encryptData(xpub.balance.toString());
+    xpub.xpub = this.refEnDb.encryptData(xpub.xpub);
+    if(xpub.zpub){
+      xpub.zpub = this.refEnDb.encryptData(xpub.zpub);
+    }
+
     return this.db
       .update(
         { xpub: xpub.xpub, coin: xpub.coin },
