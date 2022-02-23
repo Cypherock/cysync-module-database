@@ -25,7 +25,7 @@ export default class PassEncrypt{
     if(!this.aesCtr){
       return data;
     }
-    
+
     data = data+this.mac;
     return aesjs.utils.hex.fromBytes(this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(data)));
   }
@@ -50,5 +50,6 @@ export default class PassEncrypt{
   }
   public DestroyHash(){
     this.passHash.splice(0, this.passHash.length);
+    this.aesCtr = undefined;
   }
 }
