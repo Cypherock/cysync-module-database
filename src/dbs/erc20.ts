@@ -72,6 +72,7 @@ export default class Erc20DB extends Service<ERC20> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return outputs;
@@ -87,6 +88,7 @@ export default class Erc20DB extends Service<ERC20> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return outputs;
@@ -102,6 +104,7 @@ export default class Erc20DB extends Service<ERC20> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return outputs;

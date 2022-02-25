@@ -108,6 +108,7 @@ export default class XpubDB extends Service<Xpub> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return null;
@@ -123,6 +124,7 @@ export default class XpubDB extends Service<Xpub> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
    return null;
@@ -138,6 +140,7 @@ export default class XpubDB extends Service<Xpub> {
        this.updatePostEnAll(outputs);
        return outputs;
       }catch(e){
+        this.deleteAll();
         logger.error(e);
       }
     return null;

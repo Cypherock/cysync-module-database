@@ -50,6 +50,7 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return null;

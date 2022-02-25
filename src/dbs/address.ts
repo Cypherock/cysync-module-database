@@ -80,6 +80,7 @@ export default class AddressDB extends Service<Address> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return null;

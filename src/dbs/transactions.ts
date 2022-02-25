@@ -213,6 +213,7 @@ export default class TransactionDB extends Service<Transaction> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return null;
@@ -229,6 +230,7 @@ export default class TransactionDB extends Service<Transaction> {
       this.updatePostEnAll(outputs);
       return outputs;
      }catch(e){
+       this.deleteAll();
        logger.error(e);
      }
      return null;
