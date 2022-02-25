@@ -8,7 +8,9 @@
     "build": "rimraf dist && tsc",
     "start": "dist/index.js",
     "pretty": "prettier --write 'src/**/*.ts'",
+    "pretty:check": "prettier --check 'src/**/*.ts'",
     "lint": "tslint -p tsconfig.json -c tslint.json --fix",
+    "lint:check": "tslint -p tsconfig.json -c tslint.json",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "husky install"
   },
@@ -39,12 +41,17 @@
     "nedb": "^1.8.0",
     "winston": "^3.5.1"
   },
-  "files": ["dist", "package.json"],
+  "files": [
+    "dist",
+    "package.json"
+  ],
   "lint-staged": {
     "*.{ts,tsx}": [
       "tslint -p tsconfig.json -c tslint.json --fix",
       "prettier --write"
     ],
-    "*.{json,md}": ["prettier --write"]
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

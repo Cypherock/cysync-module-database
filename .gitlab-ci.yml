@@ -1,8 +1,16 @@
 image: node:latest
 
 stages:
+  - test
   - build
   - build-beta
+
+test:
+  stage: test
+  script:
+    - yarn install
+    - yarn lint:check
+    - yarn pretty:check
 
 build:
   stage: build
@@ -13,6 +21,7 @@ build:
     - echo "-- build completed succesfully"
   only:
     - master
+
 build-beta:
   stage: build-beta
   script:
