@@ -69,7 +69,7 @@ export default class XpubDB extends Service<Xpub> {
             temp.zpub = this.refEnDb.encryptData(output.zpub);
           }
         }
-        await this.db.update({walletId:output.walletId, coin:output.coin}, {$set: { xpub:temp.xpub, balance:temp.balance, zpub:temp.zpub }});
+        await this.db.update({walletId:output.walletId, coin:output.coin}, {$set: { xpub:temp.xpub, totalBalance:temp.totalBalance, zpubBalance:temp.zpubBalance, xpubBalance:temp.xpubBalance, zpub:temp.zpub }});
       }
     }
     return outputs;
