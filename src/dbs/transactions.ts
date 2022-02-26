@@ -294,7 +294,7 @@ export default class TransactionDB extends Service<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map((elem) => elem.address)
+          addressFromDB.map(elem => elem.address)
         );
       }
 
@@ -344,9 +344,7 @@ export default class TransactionDB extends Service<Transaction> {
 
         if (prevInputs && prevInputs.length > 0) {
           for (const input of prevInputs) {
-            const index = inputs.findIndex(
-              (elem) => elem.index === input.index
-            );
+            const index = inputs.findIndex(elem => elem.index === input.index);
 
             if (input.isMine) {
               inputs[index].isMine = true;
@@ -357,7 +355,7 @@ export default class TransactionDB extends Service<Transaction> {
         if (prevOutputs && prevOutputs.length > 0) {
           for (const output of prevOutputs) {
             const index = outputs.findIndex(
-              (elem) => elem.index === output.index
+              elem => elem.index === output.index
             );
 
             if (output.isMine) {
@@ -552,7 +550,7 @@ export default class TransactionDB extends Service<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map((elem) => elem.address)
+          addressFromDB.map(elem => elem.address)
         );
       }
 
@@ -604,9 +602,7 @@ export default class TransactionDB extends Service<Transaction> {
 
         if (prevInputs && prevInputs.length > 0) {
           for (const input of prevInputs) {
-            const index = inputs.findIndex(
-              (elem) => elem.index === input.index
-            );
+            const index = inputs.findIndex(elem => elem.index === input.index);
 
             if (input.isMine) {
               inputs[index].isMine = true;
@@ -617,7 +613,7 @@ export default class TransactionDB extends Service<Transaction> {
         if (prevOutputs && prevOutputs.length > 0) {
           for (const output of prevOutputs) {
             const index = outputs.findIndex(
-              (elem) => elem.index === output.index
+              elem => elem.index === output.index
             );
 
             if (output.isMine) {
