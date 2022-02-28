@@ -1,11 +1,10 @@
-import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
+import { ALLCOINS, ERC20TOKENS, Erc20CoinData } from '@cypherock/communication';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import Service from '../module/database';
 import Transaction, { InputOutput, SentReceive } from '../models/transaction';
 import AddressDB from './address';
 import logger from '../utils/logger';
-import PassEncrypt from "./passHash";
 
 const isBtcFork = (coinStr: string) => {
   const coin = ALLCOINS[coinStr.toLowerCase()];
@@ -28,95 +27,16 @@ export default class TransactionDB extends Service<Transaction> {
    *  Calls the super constructor with the database name and the base URL to fetch last transactions.
    * (Could be cypherock server, or any other server)
    */
-  constructor(userDataPath = '', enDb:PassEncrypt) {
-    super('transactions', userDataPath, 'v1', enDb);
+  constructor(userDataPath = '') {
+    super('transactions', userDataPath, 'v1');
   }
-
-  public async updatePostEn(txn:Transaction){
-    if(!this.refEnDb){
-      return false;
-    }
-    
-    txn.amount = await this.refEnDb.decryptData(txn.amount);
-    txn.hash = await this.refEnDb.decryptData(txn.hash);
-
-    if(txn.fees){
-      txn.fees = await this.refEnDb.decryptData(txn.fees);
-    }
-
-    if(txn.total){
-      txn.total = await this.refEnDb.decryptData(txn.total);
-    }
-
-    if(txn.outputs) {
-      for(let output of txn.outputs){
-        output.address = await this.refEnDb.decryptData(output.address);
-        output.value = await this.refEnDb.decryptData(output.value);
-      }
-    }
-    if(txn.inputs) {
-      for(let input of txn.inputs){
-        input.address = await this.refEnDb.decryptData(input.address);
-        input.value = await this.refEnDb.decryptData(input.value);
-      }
-    }
-    return true;
-  }
-
-  public async updatePostEnAll(txns:Transaction[], flag?:boolean){
-    for(let txn of txns){
-      if(!await this.updatePostEn(txn)){
-        throw "ref enDb is not defined";
-      }
-      if(flag){
-        let [amount, hash, fees, total] = [txn.amount, txn.hash, txn.fees, txn.total]
-        
-        if(this.refEnDb){
-          amount = await this.refEnDb.encryptData(amount);
-          hash = await this.refEnDb.encryptData(hash);
-          await this.db.update({hash:txn.hash}, {$set: { amount:amount, hash:hash}});
-          if(fees){
-            fees = await this.refEnDb.encryptData(fees);
-            await this.db.update({hash}, {$set: {fees}});
-          }
-          if(total){
-            total = await this.refEnDb.encryptData(total);
-            await this.db.update({hash}, {$set: {total}});
-          }
-        }
-
-        if(txn.outputs) {
-          let tempOut:InputOutput[] = {...txn.outputs};
-          if(this.refEnDb){
-            for(let output of tempOut){
-              output.address = await this.refEnDb.encryptData(output.address);
-              output.value = await this.refEnDb.encryptData(output.value);
-            }
-          }
-          await this.db.update({hash}, {$set: { outputs:tempOut}});
-        }
-        if(txn.inputs) {
-          let tempIn:InputOutput[] = {...txn.inputs};
-          if(this.refEnDb){
-            for(let input of tempIn){
-              input.address = await this.refEnDb.encryptData(input.address);
-              input.value = await this.refEnDb.encryptData(input.value);
-            }
-          }
-          await this.db.update({hash}, {$set: {inputs:tempIn }});
-        }
-      }
-    }
-    return txns;
-  }
-
 
   /**
    * Gets all transactions from the local database.
    *
    * @return promise that resolves to a list of transactions
    */
-  public getAll = async (
+  public getAll = (
     query?: {
       walletId?: string;
       hash?: string;
@@ -208,15 +128,7 @@ export default class TransactionDB extends Service<Transaction> {
         .exec();
     }
 
-    let outputs = await this.db.find(dbQuery).exec();
-    try{
-      this.updatePostEnAll(outputs);
-      return outputs;
-     }catch(e){
-       this.deleteAll();
-       logger.error(e);
-     }
-     return null;
+    return this.db.find(dbQuery).exec();
   };
 
   /**
@@ -224,49 +136,15 @@ export default class TransactionDB extends Service<Transaction> {
    * @param walletId - id of the wallet whose transactions are to be retrieved
    * @return promise that resolves to a list of transactions
    */
-  public async getByWalletId(walletId: string) {
-    let outputs = await this.db.find({ walletId }).exec();
-    try{
-      this.updatePostEnAll(outputs);
-      return outputs;
-     }catch(e){
-       this.deleteAll();
-       logger.error(e);
-     }
-     return null;
+  public getByWalletId(walletId: string) {
+    return this.db.find({ walletId });
   }
 
   /**
    * Inserts a new transaction to the database.
    * @param txn - Transaction
    */
-  public async insert(txn: Transaction) {
-    
-    if(this.refEnDb){
-      if(txn.outputs){
-        for(let output of txn.outputs){
-          output.address = await this.refEnDb.encryptData(output.address);
-          output.value = await this.refEnDb.encryptData(output.value);
-        }
-      }
-      if(txn.inputs){
-        for(let input of txn.inputs){
-          input.address = await this.refEnDb.encryptData(input.address);
-          input.value = await this.refEnDb.encryptData(input.value);
-        }
-      }
-      txn.amount = await this.refEnDb.encryptData(txn.amount);
-      //txn.hash = await this.refEnDb.encryptData(txn.hash); expect encrypted hash in input.
-      //There is some problem in update/insert operations TBD : update
-
-      if(txn.fees){
-        txn.fees = await this.refEnDb.encryptData(txn.fees);
-      }
-      if(txn.total){
-        txn.total = await this.refEnDb.encryptData(txn.total);
-      }
-    }
-
+  public insert(txn: Transaction) {
     return (
       this.db
         // txn hash cannot be unique because the same txn can be in different wallet
@@ -290,17 +168,11 @@ export default class TransactionDB extends Service<Transaction> {
     if (!txn.hash) {
       return 0;
     }
-    
-    if (txn.coinType === 'eth' || txn.coinType === 'ethr') {
-      txn.hash = txn.hash.toLowerCase();
-    }
-
-    txn.hash = this.refEnDb? await this.refEnDb.encryptData(txn.hash):txn.hash;
 
     if (txn.coinType === 'eth' || txn.coinType === 'ethr') {
       this.db
         .update(
-          { hash: txn.hash },
+          { hash: txn.hash.toLowerCase() },
           {
             $set: {
               status: txn.isError ? 2 : 1,
@@ -349,7 +221,7 @@ export default class TransactionDB extends Service<Transaction> {
       } else if (txn.block_height) {
         const allTx = await this.db.find({ hash: txn.hash }).exec();
         if (allTx.length === 0) {
-          return 0;
+          return null;
         }
 
         const transaction = allTx[0];
@@ -408,13 +280,8 @@ export default class TransactionDB extends Service<Transaction> {
       }
     }
 
-    /**
-     * This should be done in insert but update is called before it.
-     */
-    txn.hash = this.refEnDb?await this.refEnDb.encryptData(txn.hash):txn.hash;
-
     if (isBtcFork(coinType)) {
-      let myAddresses: string[] = [];
+      let myAddresses = [];
 
       if (addresses && addresses.length > 0) {
         myAddresses = addresses;
@@ -427,7 +294,7 @@ export default class TransactionDB extends Service<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map(elem => elem.address)
+          addressFromDB.map((elem) => elem.address)
         );
       }
 
@@ -437,7 +304,7 @@ export default class TransactionDB extends Service<Transaction> {
       let sentReceive: SentReceive;
 
       if (txn.inputs && txn.inputs.length > 0) {
-        inputs = txn.inputs.map((elem: any, i: number) => {
+        inputs = txn.inputs.map((elem, i) => {
           return {
             address: elem.addresses ? elem.addresses[0] : '',
             value: String(elem.output_value),
@@ -450,7 +317,7 @@ export default class TransactionDB extends Service<Transaction> {
       }
 
       if (txn.outputs && txn.outputs.length > 0) {
-        outputs = txn.outputs.map((elem: any, i: number) => {
+        outputs = txn.outputs.map((elem, i) => {
           return {
             address: elem.addresses ? elem.addresses[0] : '',
             value: String(elem.value),
@@ -477,7 +344,9 @@ export default class TransactionDB extends Service<Transaction> {
 
         if (prevInputs && prevInputs.length > 0) {
           for (const input of prevInputs) {
-            const index = inputs.findIndex(elem => elem.index === input.index);
+            const index = inputs.findIndex(
+              (elem) => elem.index === input.index
+            );
 
             if (input.isMine) {
               inputs[index].isMine = true;
@@ -488,7 +357,7 @@ export default class TransactionDB extends Service<Transaction> {
         if (prevOutputs && prevOutputs.length > 0) {
           for (const output of prevOutputs) {
             const index = outputs.findIndex(
-              elem => elem.index === output.index
+              (elem) => elem.index === output.index
             );
 
             if (output.isMine) {
@@ -534,7 +403,6 @@ export default class TransactionDB extends Service<Transaction> {
         outputs
       };
 
-
       // Update the confirmations of txns with same hash
       await this.db.update(
         { hash: txn.hash },
@@ -546,10 +414,7 @@ export default class TransactionDB extends Service<Transaction> {
           }
         }
       );
-      /**
-       * TBD:why insert after update.
-       */
-      await this.insert(newTxn);
+      await this.insert(this.createdDBObject(newTxn));
       this.emit('insert');
     } else {
       // Derive address from Xpub (It'll always give a mixed case address with checksum)
@@ -583,280 +448,6 @@ export default class TransactionDB extends Service<Transaction> {
 
       if (txn.isErc20Token) {
         token = txn.tokenAbbr;
-
-        if (!token) {
-          logger.warn('Token abbr is not present in ERC20 Transaction');
-          return;
-        }
-
-        if (!ERC20TOKENS[token]) {
-          logger.warn('Invalid tokenAbbr in transaction', { token });
-          return;
-        }
-
-        const feeTxn: Transaction = {
-          hash: txn.hash,
-          amount: fees.toString(),
-          fees: '0',
-          total: fees.toString(),
-          confirmations: txn.confirmations || 0,
-          walletId,
-          coin: coinType,
-          // 2 for failed, 1 for pass
-          status: txn.isError ? 2 : 1,
-          sentReceive: 'FEES',
-          confirmed: new Date(txn.timeStamp),
-          blockHeight: txn.blockNumber,
-          ethCoin: coinType,
-          inputs: [],
-          outputs: []
-        };
-
-        await this.insert(feeTxn);
-      }
-
-      const newTxn: Transaction = {
-        hash: txn.hash,
-        amount: amount.toString(),
-        fees: fees.toString(),
-        total: token ? amount.toString() : amount.plus(fees).toString(),
-        confirmations: txn.confirmations || 0,
-        walletId,
-        coin: token ? token : coinType,
-        // 2 for failed, 1 for pass
-        status: txn.isError ? 2 : 1,
-        sentReceive:
-          myAddress.toLowerCase() === fromAddr.toLowerCase()
-            ? 'SENT'
-            : 'RECEIVED',
-        confirmed: new Date(txn.timeStamp),
-        blockHeight: txn.blockNumber,
-        ethCoin: coinType,
-        inputs,
-        outputs
-      };
-
-      await this.insert(newTxn);
-    }
-  }
-
-  public async insertFromBlockbookTxn(transaction: {
-    txn: any;
-    xpub: string;
-    addresses: any[];
-    walletId: string;
-    coinType: string;
-    addressDB: AddressDB;
-    walletName?: string;
-    status?: 'PENDING' | 'SUCCESS' | 'FAILED';
-  }) {
-    const {
-      txn,
-      xpub,
-      addresses,
-      walletId,
-      walletName,
-      coinType,
-      addressDB,
-      status
-    } = transaction;
-
-    let statusCode: number;
-
-    if (status) {
-      statusCode = status === 'PENDING' ? 0 : status === 'SUCCESS' ? 1 : 2;
-    } else {
-      if (txn.confirmations && txn.confirmations >= 1) {
-        statusCode = 1;
-      } else {
-        statusCode = 0;
-      }
-    }
-
-    txn.hash = this.refEnDb? await this.refEnDb.encryptData(txn.hash):txn.hash ;
-
-    if (isBtcFork(coinType)) {
-      let myAddresses: string[] = [];
-
-      if (addresses && addresses.length > 0) {
-        myAddresses = addresses;
-      }
-
-      // Get all addresses of that xpub and coin
-      // This is because the address from the API is of only 1 wallet,
-      // Whereas there are 2 (or 4 in case od BTC & BTCT) wallets.
-      const addressFromDB = await addressDB.getAll({ xpub, coinType });
-
-      if (addressFromDB && addressFromDB.length > 0) {
-        myAddresses = myAddresses.concat(
-          addressFromDB.map(elem => elem.address)
-        );
-      }
-
-      let inputs: InputOutput[] = [];
-      let outputs: InputOutput[] = [];
-      let totalValue = new BigNumber(0);
-      let sentReceive: SentReceive;
-
-      if (txn.vin && txn.vin.length > 0) {
-        inputs = txn.vin.map((elem: any, i: number) => {
-          return {
-            address: elem.isAddress && elem.addresses ? elem.addresses[0] : '',
-            value: String(elem.value),
-            index: i,
-            isMine:
-              elem.isAddress && elem.addresses
-                ? myAddresses.includes(elem.addresses[0])
-                : false
-          } as InputOutput;
-        });
-      }
-
-      if (txn.vout && txn.vout.length > 0) {
-        outputs = txn.vout.map((elem: any, i: number) => {
-          return {
-            address: elem.isAddress && elem.addresses ? elem.addresses[0] : '',
-            value: String(elem.value),
-            index: i,
-            isMine:
-              elem.isAddress && elem.addresses
-                ? myAddresses.includes(elem.addresses[0])
-                : false
-          } as InputOutput;
-        });
-      }
-
-      const existingTxns = await this.db
-        .find({
-          hash: txn.txid,
-          walletId,
-          coin: coinType
-        })
-        .exec();
-
-      if (existingTxns && existingTxns.length > 0) {
-        const existingTxn = existingTxns[0];
-        const prevInputs = existingTxn.inputs;
-        const prevOutputs = existingTxn.outputs;
-
-        if (prevInputs && prevInputs.length > 0) {
-          for (const input of prevInputs) {
-            const index = inputs.findIndex(elem => elem.index === input.index);
-
-            if (input.isMine) {
-              inputs[index].isMine = true;
-            }
-          }
-        }
-
-        if (prevOutputs && prevOutputs.length > 0) {
-          for (const output of prevOutputs) {
-            const index = outputs.findIndex(
-              elem => elem.index === output.index
-            );
-
-            if (output.isMine) {
-              outputs[index].isMine = true;
-            }
-          }
-        }
-      }
-
-      for (const input of inputs) {
-        if (input.isMine) {
-          totalValue = totalValue.minus(new BigNumber(input.value));
-        }
-      }
-
-      for (const output of outputs) {
-        if (output.isMine) {
-          totalValue = totalValue.plus(new BigNumber(output.value));
-        }
-      }
-
-      if (totalValue.isGreaterThan(0)) {
-        sentReceive = 'RECEIVED';
-      } else {
-        sentReceive = 'SENT';
-        totalValue = totalValue.plus(new BigNumber(txn.fees));
-      }
-
-      let confirmed = new Date();
-
-      if (txn.blockTime) {
-        confirmed = new Date(txn.blockTime * 1000);
-      }
-
-      const newTxn: Transaction = {
-        hash: txn.txid,
-        total: String(txn.value),
-        fees: String(txn.fees),
-        amount: totalValue.absoluteValue().toString(),
-        confirmations: txn.confirmations || 0,
-        walletId,
-        walletName,
-        coin: coinType,
-        sentReceive,
-        status: statusCode,
-        confirmed,
-        blockHeight: txn.blockHeight,
-        inputs,
-        outputs
-      };
-
-      // Update the confirmations of txns with same hash
-      await this.db.update(
-        { hash: txn.txid },
-        {
-          $set: {
-            confirmations: newTxn.confirmations,
-            blockHeight: newTxn.blockHeight,
-            status: newTxn.status
-          }
-        }
-      );
-      /**
-       * TBD: why is insert called after update for same txn hash.
-       */
-      await this.insert(newTxn);
-      this.emit('insert');
-    } else {
-      // Derive address from Xpub (It'll always give a mixed case address with checksum)
-      const myAddress =
-        utils.HDNode.fromExtendedKey(xpub).derivePath(`0/0`).address;
-
-      const amount = new BigNumber(txn.value);
-      const fromAddr = txn.from;
-      const inputs: InputOutput[] = [
-        {
-          address: txn.from.toLowerCase(),
-          value: amount.toString(),
-          isMine: txn.from.toLowerCase() === myAddress.toLowerCase(),
-          index: 0
-        }
-      ];
-      const outputs: InputOutput[] = [
-        {
-          address: txn.to.toLowerCase(),
-          value: amount.toString(),
-          isMine: txn.to.toLowerCase() === myAddress.toLowerCase(),
-          index: 0
-        }
-      ];
-
-      let token: string | undefined;
-
-      const fees = new BigNumber(txn.gasUsed || txn.gas || 0).multipliedBy(
-        txn.gasPrice || 0
-      );
-
-      if (txn.isErc20Token) {
-        token = txn.tokenAbbr;
-
-        if (!token) {
-          logger.warn('Token abbr is not present in ERC20 Transaction');
-          return;
-        }
 
         if (!ERC20TOKENS[token]) {
           logger.warn('Invalid tokenAbbr in transaction', { token });
@@ -914,7 +505,7 @@ export default class TransactionDB extends Service<Transaction> {
    * @param walletId - id of the wallet whose transactions are to be deleted
    * @param coin - coin abbr of the coin whose transactions are to be deleted
    */
-  public async deleteByCoin(walletId: string, coin: string) {
+  public deleteByCoin(walletId: string, coin: string) {
     return this.db.remove({ walletId, coin }, { multi: true }).then(() => {
       this.emit('delete');
     });
@@ -924,10 +515,7 @@ export default class TransactionDB extends Service<Transaction> {
    * deletes a particular transaction by it's hash
    * @param hash
    */
-  public async delete(hash: string) {
-    
-    hash = this.refEnDb? await this.refEnDb.encryptData(hash) : hash;
-
+  public delete(hash: string) {
     return this.db.remove({ hash }).then(() => this.emit('delete'));
   }
 
@@ -935,7 +523,7 @@ export default class TransactionDB extends Service<Transaction> {
    * deletes all transactions of a particular wallet
    * @param walletId - id of the wallet whose transactions are to be deleted.
    */
-  public async deleteWallet(walletId: string) {
+  public deleteWallet(walletId: string) {
     return this.db
       .remove({ walletId }, { multi: true })
       .then(() => this.emit('delete'));
@@ -944,7 +532,7 @@ export default class TransactionDB extends Service<Transaction> {
   /**
    * deletes all the transactions form the database
    */
-  public async deleteAll() {
+  public deleteAll() {
     return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
   }
 
