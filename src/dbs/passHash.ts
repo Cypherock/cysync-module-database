@@ -5,10 +5,6 @@ export default class PassEncrypt{
   private passHash = [];
   private mac:string = '';
   private aesCtr:any;
-
-  public async init(){
-    this.mac = await macaddress.one();
-  }
   
   public setPassHash(passhash:string){
     if(passhash == null){
@@ -21,7 +17,10 @@ export default class PassEncrypt{
     this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
   }
 
-  public encryptData(data:string){
+  public async encryptData(data:string){
+    if(this.mac === ''){
+      this.mac = await macaddress.one();
+    }
     if(!this.aesCtr){
       return data;
     }
@@ -34,7 +33,10 @@ export default class PassEncrypt{
     return [this.mac === decryptedData.substring(decryptedData.length-17), decryptedData.substring(0,decryptedData.length-17)];
   }
 
-  public decryptData(encrypted:string){
+  public async decryptData(encrypted:string){
+    if(this.mac === ''){
+      this.mac = await macaddress.one();
+    }      
     if(!this.aesCtr){
       return encrypted;
     }
@@ -48,6 +50,7 @@ export default class PassEncrypt{
       return extract;
     }
   }
+
   public DestroyHash(){
     this.passHash.splice(0, this.passHash.length);
     this.aesCtr = undefined;

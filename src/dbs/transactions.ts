@@ -32,32 +32,32 @@ export default class TransactionDB extends Service<Transaction> {
     super('transactions', userDataPath, 'v1', enDb);
   }
 
-  public updatePostEn(txn:Transaction){
+  public async updatePostEn(txn:Transaction){
     if(!this.refEnDb){
       return false;
     }
     
-    txn.amount = this.refEnDb.decryptData(txn.amount);
-    txn.hash = this.refEnDb.decryptData(txn.hash);
+    txn.amount = await this.refEnDb.decryptData(txn.amount);
+    txn.hash = await this.refEnDb.decryptData(txn.hash);
 
     if(txn.fees){
-      txn.fees = this.refEnDb.decryptData(txn.fees);
+      txn.fees = await this.refEnDb.decryptData(txn.fees);
     }
 
     if(txn.total){
-      txn.total = this.refEnDb.decryptData(txn.total);
+      txn.total = await this.refEnDb.decryptData(txn.total);
     }
 
     if(txn.outputs) {
       for(let output of txn.outputs){
-        output.address = this.refEnDb.decryptData(output.address);
-        output.value = this.refEnDb.decryptData(output.value);
+        output.address = await this.refEnDb.decryptData(output.address);
+        output.value = await this.refEnDb.decryptData(output.value);
       }
     }
     if(txn.inputs) {
       for(let input of txn.inputs){
-        input.address = this.refEnDb.decryptData(input.address);
-        input.value = this.refEnDb.decryptData(input.value);
+        input.address = await this.refEnDb.decryptData(input.address);
+        input.value = await this.refEnDb.decryptData(input.value);
       }
     }
     return true;
@@ -65,22 +65,22 @@ export default class TransactionDB extends Service<Transaction> {
 
   public async updatePostEnAll(txns:Transaction[], flag?:boolean){
     for(let txn of txns){
-      if(!this.updatePostEn(txn)){
+      if(!await this.updatePostEn(txn)){
         throw "ref enDb is not defined";
       }
       if(flag){
         let [amount, hash, fees, total] = [txn.amount, txn.hash, txn.fees, txn.total]
         
         if(this.refEnDb){
-          amount = this.refEnDb.encryptData(amount);
-          hash = this.refEnDb.encryptData(hash);
+          amount = await this.refEnDb.encryptData(amount);
+          hash = await this.refEnDb.encryptData(hash);
           await this.db.update({hash:txn.hash}, {$set: { amount:amount, hash:hash}});
           if(fees){
-            fees = this.refEnDb.encryptData(fees);
+            fees = await this.refEnDb.encryptData(fees);
             await this.db.update({hash}, {$set: {fees}});
           }
           if(total){
-            total = this.refEnDb.encryptData(total);
+            total = await this.refEnDb.encryptData(total);
             await this.db.update({hash}, {$set: {total}});
           }
         }
@@ -89,8 +89,8 @@ export default class TransactionDB extends Service<Transaction> {
           let tempOut:InputOutput[] = {...txn.outputs};
           if(this.refEnDb){
             for(let output of tempOut){
-              output.address = this.refEnDb.encryptData(output.address);
-              output.value = this.refEnDb.encryptData(output.value);
+              output.address = await this.refEnDb.encryptData(output.address);
+              output.value = await this.refEnDb.encryptData(output.value);
             }
           }
           await this.db.update({hash}, {$set: { outputs:tempOut}});
@@ -99,8 +99,8 @@ export default class TransactionDB extends Service<Transaction> {
           let tempIn:InputOutput[] = {...txn.inputs};
           if(this.refEnDb){
             for(let input of tempIn){
-              input.address = this.refEnDb.encryptData(input.address);
-              input.value = this.refEnDb.encryptData(input.value);
+              input.address = await this.refEnDb.encryptData(input.address);
+              input.value = await this.refEnDb.encryptData(input.value);
             }
           }
           await this.db.update({hash}, {$set: {inputs:tempIn }});
@@ -240,30 +240,30 @@ export default class TransactionDB extends Service<Transaction> {
    * Inserts a new transaction to the database.
    * @param txn - Transaction
    */
-  public insert(txn: Transaction) {
+  public async insert(txn: Transaction) {
     
     if(this.refEnDb){
       if(txn.outputs){
         for(let output of txn.outputs){
-          output.address = this.refEnDb.encryptData(output.address);
-          output.value = this.refEnDb.encryptData(output.value);
+          output.address = await this.refEnDb.encryptData(output.address);
+          output.value = await this.refEnDb.encryptData(output.value);
         }
       }
       if(txn.inputs){
         for(let input of txn.inputs){
-          input.address = this.refEnDb.encryptData(input.address);
-          input.value = this.refEnDb.encryptData(input.value);
+          input.address = await this.refEnDb.encryptData(input.address);
+          input.value = await this.refEnDb.encryptData(input.value);
         }
       }
-      txn.amount = this.refEnDb.encryptData(txn.amount);
-      //txn.hash = this.refEnDb.encryptData(txn.hash); expect encrypted hash in input.
+      txn.amount = await this.refEnDb.encryptData(txn.amount);
+      //txn.hash = await this.refEnDb.encryptData(txn.hash); expect encrypted hash in input.
       //There is some problem in update/insert operations TBD : update
 
       if(txn.fees){
-        txn.fees = this.refEnDb.encryptData(txn.fees);
+        txn.fees = await this.refEnDb.encryptData(txn.fees);
       }
       if(txn.total){
-        txn.total = this.refEnDb.encryptData(txn.total);
+        txn.total = await this.refEnDb.encryptData(txn.total);
       }
     }
 
@@ -295,7 +295,7 @@ export default class TransactionDB extends Service<Transaction> {
       txn.hash = txn.hash.toLowerCase();
     }
 
-    txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash;
+    txn.hash = this.refEnDb? await this.refEnDb.encryptData(txn.hash):txn.hash;
 
     if (txn.coinType === 'eth' || txn.coinType === 'ethr') {
       this.db
@@ -411,7 +411,7 @@ export default class TransactionDB extends Service<Transaction> {
     /**
      * This should be done in insert but update is called before it.
      */
-    txn.hash = this.refEnDb?this.refEnDb.encryptData(txn.hash):txn.hash;
+    txn.hash = this.refEnDb?await this.refEnDb.encryptData(txn.hash):txn.hash;
 
     if (isBtcFork(coinType)) {
       let myAddresses: string[] = [];
@@ -673,7 +673,7 @@ export default class TransactionDB extends Service<Transaction> {
       }
     }
 
-    txn.hash = this.refEnDb? this.refEnDb.encryptData(txn.hash):txn.hash ;
+    txn.hash = this.refEnDb? await this.refEnDb.encryptData(txn.hash):txn.hash ;
 
     if (isBtcFork(coinType)) {
       let myAddresses: string[] = [];
@@ -926,7 +926,7 @@ export default class TransactionDB extends Service<Transaction> {
    */
   public async delete(hash: string) {
     
-    hash = this.refEnDb? this.refEnDb.encryptData(hash) : hash;
+    hash = this.refEnDb? await this.refEnDb.encryptData(hash) : hash;
 
     return this.db.remove({ hash }).then(() => this.emit('delete'));
   }

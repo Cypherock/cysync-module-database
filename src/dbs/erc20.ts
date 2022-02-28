@@ -17,21 +17,21 @@ export default class Erc20DB extends Service<ERC20> {
     super('erc20', userDataPath, 'v1', enDb);
   }
 
-  public updatePostEn(output:ERC20){
+  public async updatePostEn(output:ERC20){
     if(!this.refEnDb){
       return false;
     }
-    output.balance = this.refEnDb.decryptData(output.balance);
+    output.balance = await this.refEnDb.decryptData(output.balance);
     return true;
   }
 
   public async updatePostEnAll(outputs:ERC20[], flag?:boolean){
     for(let output of outputs){
-      if(!this.updatePostEn(output)){
+      if(!await this.updatePostEn(output)){
         throw "ref enDb is not defined";
       }
       if(flag){
-        await this.db.update({walletId:output.walletId, coin:output.coin, ethCoin:output.ethCoin}, {$set: {balance:this.refEnDb? this.refEnDb.encryptData(output.balance):output.balance}});
+        await this.db.update({walletId:output.walletId, coin:output.coin, ethCoin:output.ethCoin}, {$set: {balance:this.refEnDb? await this.refEnDb.encryptData(output.balance):output.balance}});
       }
     }
     return outputs;
@@ -118,7 +118,7 @@ export default class Erc20DB extends Service<ERC20> {
   public async getByWalletIdandToken(walletId: string, coin: string) {
     let output = await this.db.findOne({ walletId, coin });
     try{
-      this.updatePostEn(output);
+      await this.updatePostEn(output);
       return output;
     }catch(e){
       logger.error(e);
@@ -143,7 +143,7 @@ export default class Erc20DB extends Service<ERC20> {
 
     let output = await this.db.findOne(dbQuery);
     try{
-      this.updatePostEn(output);
+      await this.updatePostEn(output);
       return output;
     }catch(e){
       logger.error(e);
@@ -157,7 +157,7 @@ export default class Erc20DB extends Service<ERC20> {
    */
   public async insert(token: ERC20Token) {
     if(this.refEnDb){
-      token.balance = this.refEnDb.encryptData(token.balance);
+      token.balance = await this.refEnDb.encryptData(token.balance);
     }
 
     return this.db
@@ -193,7 +193,7 @@ export default class Erc20DB extends Service<ERC20> {
     let dbQuery: any = {};
 
     if(query?.balance){
-      query.balance = this.refEnDb?this.refEnDb.encryptData(query.balance):query.balance;
+      query.balance = this.refEnDb?await this.refEnDb.encryptData(query.balance):query.balance;
     }
 
     if (query) {
@@ -213,7 +213,7 @@ export default class Erc20DB extends Service<ERC20> {
    */
   public async updateBalance(coin: string, walletId: string, balance: string) {
     if(this.refEnDb){
-      balance = this.refEnDb.encryptData(balance);
+      balance = await this.refEnDb.encryptData(balance);
     }
     return this.db
       .update({ coin, walletId }, { $set: { balance } })

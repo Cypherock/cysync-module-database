@@ -16,24 +16,24 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
     super('receiveAddresses', userDataPath, 'v1', enDb);
   }
 
-  public updatePostEn(output:ReceiveAddress){
+  public async updatePostEn(output:ReceiveAddress){
     if(!this.refEnDb){
       return false;
     }
-    output.address = this.refEnDb.decryptData(output.address);
+    output.address = await this.refEnDb.decryptData(output.address);
     return true;
   }
 
   public async updatePostEnAll(outputs:ReceiveAddress[], flag?:boolean){
     for(let output of outputs){
-      if(!this.updatePostEn(output)){
+      if(!await this.updatePostEn(output)){
         throw "ref enDb is not defined";
       }
       if(flag){
         let temp:string = output.address;
         
         if(this.refEnDb){
-          temp = this.refEnDb.encryptData(output.address);
+          temp = await this.refEnDb.encryptData(output.address);
         }
         await this.db.update({address:output.address, walletId:output.walletId, coinType:output.coinType}, {$set: { address:temp }});
       }
@@ -62,7 +62,7 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
    */
   public async insert(address: ReceiveAddress) {
     if(this.refEnDb){
-      address.address = this.refEnDb.encryptData(address.address);
+      address.address = await this.refEnDb.encryptData(address.address);
     }
 
     return this.db
@@ -82,7 +82,7 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
    */
   public async delete(address: string) {
     if(this.refEnDb){
-      address = this.refEnDb.encryptData(address);
+      address = await this.refEnDb.encryptData(address);
     }
     return this.db.remove({ address }).then(() => this.emit('delete'));
   }
@@ -98,7 +98,7 @@ export default class ReceiveAddressDB extends Service<ReceiveAddress> {
     let dbQuery: any = {};
     
     if(query?.address && this.refEnDb){
-      query.address = this.refEnDb.encryptData(query.address);
+      query.address = await this.refEnDb.encryptData(query.address);
     }
 
     if (query) {

@@ -17,25 +17,25 @@ export default class AddressDB extends Service<Address> {
   }
 
 
-  public updatePostEn(output:Address){
+  public async updatePostEn(output:Address){
     if(!this.refEnDb){
       return false;
     }
-    output.address = this.refEnDb.decryptData(output.address);
-    output.xpub = this.refEnDb.decryptData(output.xpub);
+    output.address = await this.refEnDb.decryptData(output.address);
+    output.xpub = await this.refEnDb.decryptData(output.xpub);
     return true;
   }
 
   public async updatePostEnAll(outputs:Address[], flag?:boolean){
     for(let output of outputs){
-      if(!this.updatePostEn(output)){
+      if(!await this.updatePostEn(output)){
         throw "ref enDb is not defined";
       }
       if(flag){
         let temp:Address = {...output};
         if(this.refEnDb){
-          temp.address = this.refEnDb.encryptData(output.address);
-          temp.xpub = this.refEnDb.encryptData(output.xpub);
+          temp.address = await this.refEnDb.encryptData(output.address);
+          temp.xpub = await this.refEnDb.encryptData(output.xpub);
         }
         await this.db.update({walletId:output.address}, {$set: { address:temp.address, xpub:temp.xpub}});
       }
@@ -101,8 +101,8 @@ export default class AddressDB extends Service<Address> {
   } | null> => {
 
     if(this.refEnDb){
-      address = this.refEnDb.encryptData(address);
-      xpub = this.refEnDb.encryptData(xpub);
+      address = await this.refEnDb.encryptData(address);
+      xpub = await this.refEnDb.encryptData(xpub);
     }
 
     const all = await this.db.find({ address, xpub, coinType }).exec();
@@ -131,8 +131,8 @@ export default class AddressDB extends Service<Address> {
    */
   public async insert(address: Address) {
     if(this.refEnDb){
-      address.address = this.refEnDb.encryptData(address.address);
-      address.xpub = this.refEnDb.encryptData(address.xpub);
+      address.address = await this.refEnDb.encryptData(address.address);
+      address.xpub = await this.refEnDb.encryptData(address.xpub);
     }
     return this.db
       .update(
@@ -155,7 +155,7 @@ export default class AddressDB extends Service<Address> {
    */
   public async delete(address: string) {
     if(this.refEnDb){
-      address = this.refEnDb.encryptData(address);
+      address = await this.refEnDb.encryptData(address);
     }
     
     return this.db.remove({ address }).then(() => this.emit('delete'));
