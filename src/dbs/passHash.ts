@@ -31,8 +31,8 @@ export default class PassEncrypt{
       return data;
     }
 
-    data = data+this.analyticsIdHash;
-    return aesjs.utils.hex.fromBytes(this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(data)));
+    const tempdata = data + this.analyticsIdHash;
+    return aesjs.utils.hex.fromBytes(this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(tempdata)));
   }
 
   public extractDataAndVerifyanalyticsId(decryptedData:string):[boolean,string]{
