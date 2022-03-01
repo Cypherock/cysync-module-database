@@ -1,8 +1,6 @@
 import Service from '../module/database';
 import ERC20 from '../models/erc20token';
 import ERC20Token from '../models/erc20token';
-import PassEncrypt from "./passHash";
-import logger from '../utils/logger';
 
 /**
  * Class for the Erc20 database. This db stores all the erc20 tokens with their last updated balances and their corresponding
@@ -13,28 +11,8 @@ export default class Erc20DB extends Service<ERC20> {
    *  Calls the super constructor with the database name and the base URL to fetch the latest balances.
    * (Could be cypherock server, or any other server)
    */
-  constructor(userDataPath = '', enDb:PassEncrypt) {
-    super('erc20', userDataPath, 'v1', enDb);
-  }
-
-  public async updatePostEn(output:ERC20){
-    if(!this.refEnDb){
-      return false;
-    }
-    output.balance = await this.refEnDb.decryptData(output.balance);
-    return true;
-  }
-
-  public async updatePostEnAll(outputs:ERC20[], flag?:boolean){
-    for(let output of outputs){
-      if(!await this.updatePostEn(output)){
-        throw "ref enDb is not defined";
-      }
-      if(flag){
-        await this.db.update({walletId:output.walletId, coin:output.coin, ethCoin:output.ethCoin}, {$set: {balance:this.refEnDb? await this.refEnDb.encryptData(output.balance):output.balance}});
-      }
-    }
-    return outputs;
+  constructor(userDataPath = '') {
+    super('erc20', userDataPath, 'v1');
   }
 
   /**
@@ -42,7 +20,7 @@ export default class Erc20DB extends Service<ERC20> {
    * @param query - query params to search database
    * @param sorting - sorting option order a : ascending | d : descending
    */
-  public async getAll(
+  public getAll(
     query?: {
       walletId?: string;
       coin?: string;
@@ -66,48 +44,24 @@ export default class Erc20DB extends Service<ERC20> {
         .sort({ [sorting.sort]: sorting.order === 'a' ? 1 : -1 })
         .exec();
     }
-    let outputs = await this.db.find(dbQuery).exec();
 
-    try{
-      this.updatePostEnAll(outputs);
-      return outputs;
-     }catch(e){
-       this.deleteAll();
-       logger.error(e);
-     }
-     return outputs;
+    return this.db.find(dbQuery).exec();
   }
 
   /**
    * returns a promise which resolves to a list of tokens of a specific coin.
    * @param coin - the token abbr whose tokens are to be retrieved
    */
-  public getByToken = async (token: string) => {
-    let outputs = await this.db.find({ coin: token }).exec();
-    try{
-      this.updatePostEnAll(outputs);
-      return outputs;
-     }catch(e){
-       this.deleteAll();
-       logger.error(e);
-     }
-     return outputs;
+  public getByToken = (token: string) => {
+    return this.db.find({ coin: token }).exec();
   };
 
   /**
    * returns a promise which resolves to a list of tokens from a specific wallet.
    * @param walletId - the ID of the wallet whose tokens are to be retrieved.
    */
-  public async getByWalletId(walletId: string, ethCoin: string) {
-    let outputs = await this.db.find({ walletId, ethCoin }).exec();
-    try{
-      this.updatePostEnAll(outputs);
-      return outputs;
-     }catch(e){
-       this.deleteAll();
-       logger.error(e);
-     }
-     return outputs;
+  public getByWalletId(walletId: string, ethCoin: string) {
+    return this.db.find({ walletId, ethCoin }).exec();
   }
 
   /**
@@ -115,21 +69,14 @@ export default class Erc20DB extends Service<ERC20> {
    * @param walletId - the ID of the wallet whose token is to be retrieved.
    * @param coin - the coin whose token is to be retrieved.
    */
-  public async getByWalletIdandToken(walletId: string, coin: string) {
-    let output = await this.db.findOne({ walletId, coin });
-    try{
-      await this.updatePostEn(output);
-      return output;
-    }catch(e){
-      logger.error(e);
-    }
-    return null;
+  public getByWalletIdandToken(walletId: string, coin: string) {
+    return this.db.findOne({ walletId, coin });
   }
 
   /**
    * gets token which corresponds to a single coin
    */
-  public async getOne(query?: {
+  public getOne(query?: {
     walletId?: string;
     coin?: string;
     ethCoin?: string;
@@ -141,14 +88,7 @@ export default class Erc20DB extends Service<ERC20> {
       dbQuery = { ...query };
     }
 
-    let output = await this.db.findOne(dbQuery);
-    try{
-      await this.updatePostEn(output);
-      return output;
-    }catch(e){
-      logger.error(e);
-    }
-    return null;
+    return this.db.findOne(dbQuery);
   }
 
   /**
@@ -156,10 +96,6 @@ export default class Erc20DB extends Service<ERC20> {
    * @param xpub - the Xpub object
    */
   public async insert(token: ERC20Token) {
-    if(this.refEnDb){
-      token.balance = await this.refEnDb.encryptData(token.balance);
-    }
-
     return this.db
       .update(
         { walletId: token.walletId, coin: token.coin, ethCoin: token.ethCoin },
@@ -192,10 +128,6 @@ export default class Erc20DB extends Service<ERC20> {
   }) {
     let dbQuery: any = {};
 
-    if(query?.balance){
-      query.balance = this.refEnDb?await this.refEnDb.encryptData(query.balance):query.balance;
-    }
-
     if (query) {
       dbQuery = { ...query };
     }
@@ -212,9 +144,6 @@ export default class Erc20DB extends Service<ERC20> {
    * @param balance - the balance object.
    */
   public async updateBalance(coin: string, walletId: string, balance: string) {
-    if(this.refEnDb){
-      balance = await this.refEnDb.encryptData(balance);
-    }
     return this.db
       .update({ coin, walletId }, { $set: { balance } })
       .then(() => this.emit('update'));
