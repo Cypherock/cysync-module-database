@@ -1,76 +1,52 @@
-var aesjs = require('aes-js');
-var macaddress = require('macaddress');
-
-
-export enum PassEncryptErrType {
-  DECRYPTION_FAIL,
-  OBJ_UNDEF
-}
-
-const defaultErrorMessages = {
-  [PassEncryptErrType.DECRYPTION_FAIL]: 'decryption failure',
-  [PassEncryptErrType.OBJ_UNDEF]: 'pass-encrypt obj not present'
-};
-
-export class PassEncryptError extends Error {
-  public errorType: PassEncryptErrType;
-  constructor(errorType: PassEncryptErrType, msg?: string) {
-    let message = msg;
-
-    if (!msg && defaultErrorMessages[errorType]) {
-      message = defaultErrorMessages[errorType];
-    }
-
-    super(message);
-    this.errorType = errorType;
-
-    Object.setPrototypeOf(this, PassEncryptError.prototype);
-  }
-}
-
-
+import aesjs from 'aes-js';
+import { PassEncryptError, PassEncryptErrType } from '.';
+import crypto from 'crypto';
 export default class PassEncrypt{
-  private passHash = [];
-  private mac:string = '';
-  private aesCtr:any;
-  
+  private passHash:Uint8Array = new Uint8Array();
+  private analyticsIdHash:string = '';
+  private aesCtr:aesjs.ModeOfOperation.ModeOfOperationCTR = new aesjs.ModeOfOperation.ctr(this.passHash);
+  private passSet:boolean = false;
+
+  constructor(analyticsIdIn:string){
+    if(analyticsIdIn === undefined){
+      throw new PassEncryptError(PassEncryptErrType.ANALYTICS_ID_UNDEF);
+    }
+    this.analyticsIdHash = crypto
+    .createHmac('sha256', analyticsIdIn).digest('hex');
+  }
+
   public setPassHash(passhash:string){
     if(passhash == null){
-      this.aesCtr = undefined;
-      this.passHash.splice(0, this.passHash.length);
+      this.passHash = new Uint8Array();
+      this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
       return;
     }
-
+    this.passSet = true;
     this.passHash = aesjs.utils.utf8.toBytes(passhash.substring(passhash.length-16));
     this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
   }
 
-  public async encryptData(data:string){
-    if(this.mac === ''){
-      this.mac = await macaddress.one();
-    }
-    if(!this.aesCtr){
+  public encryptData(data:string){
+    if(!this.passSet){
       return data;
     }
 
-    data = data+this.mac;
+    data = data+this.analyticsIdHash;
     return aesjs.utils.hex.fromBytes(this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(data)));
   }
 
-  public extractDataAndVerifyMac(decryptedData:string):[boolean,string]{
-    return [this.mac === decryptedData.substring(decryptedData.length-17), decryptedData.substring(0,decryptedData.length-17)];
+  public extractDataAndVerifyanalyticsId(decryptedData:string):[boolean,string]{
+    return [this.analyticsIdHash === decryptedData.substring(decryptedData.length - 64), decryptedData.substring(0,decryptedData.length - 64)];
   }
 
-  public async decryptData(encrypted:string){
-    if(this.mac === ''){
-      this.mac = await macaddress.one();
-    }      
-    if(!this.aesCtr){
+  public decryptData(encrypted:string){
+
+    if(!this.passSet){
       return encrypted;
     }
 
-    let data = aesjs.utils.utf8.fromBytes(this.aesCtr.decrypt(aesjs.utils.hex.toBytes(encrypted)));
-    let [verified, extract] = this.extractDataAndVerifyMac(data);
+    const data = aesjs.utils.utf8.fromBytes(this.aesCtr.decrypt(aesjs.utils.hex.toBytes(encrypted)));
+    const [verified, extract] = this.extractDataAndVerifyanalyticsId(data);
     if(!verified){
       throw new PassEncryptError(PassEncryptErrType.DECRYPTION_FAIL);
     }
@@ -80,7 +56,8 @@ export default class PassEncrypt{
   }
 
   public DestroyHash(){
-    this.passHash.splice(0, this.passHash.length);
-    this.aesCtr = undefined;
+    this.passHash = new Uint8Array();
+    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
+    this.passSet = false;
   }
 }

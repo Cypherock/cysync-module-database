@@ -16,13 +16,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/aes-js": "^3.1.1",
     "@types/nedb": "^1.8.12",
     "@types/node": "^17.0.15",
     "@types/serialport": "^8.0.2",
     "eslint": "^8.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^7.0.4",
     "lint-staged": "^12.3.4",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
@@ -38,7 +38,6 @@
     "ethereum-input-data-decoder": "^0.3.5",
     "ethers": "^5.5.4",
     "events": "^3.3.0",
-    "macaddress": "^0.5.2",
     "nedb": "^1.8.0",
     "winston": "^3.6.0"
   },
