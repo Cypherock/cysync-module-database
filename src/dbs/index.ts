@@ -7,7 +7,7 @@ import ReceiveAddressDB from './receiveAddress';
 import NotificationDB from './notification';
 import DeviceDB from './device';
 import Erc20DB from './erc20';
-import PassEncrypt from './passHash'
+import PassEncrypt from './passHash';
 export {
   PriceDB,
   WalletDB,
@@ -29,7 +29,8 @@ export enum PassEncryptErrType {
 const defaultErrorMessages = {
   [PassEncryptErrType.DECRYPTION_FAIL]: 'decryption failure',
   [PassEncryptErrType.OBJ_UNDEF]: 'pass-encrypt obj not present',
-  [PassEncryptErrType.ANALYTICS_ID_UNDEF]:'analytics id not defined. unexpected err.'
+  [PassEncryptErrType.ANALYTICS_ID_UNDEF]:
+    'analytics id not defined. unexpected err.'
 };
 
 export class PassEncryptError extends Error {
@@ -47,4 +48,3 @@ export class PassEncryptError extends Error {
     Object.setPrototypeOf(this, PassEncryptError.prototype);
   }
 }
-

@@ -12,7 +12,7 @@ export default abstract class Database<T> {
   public db: NedbPromise<T>;
   public emitter = new EventEmitter();
   public databaseVersion: string | undefined;
-  protected refEnDb:PassEncrypt | undefined;
+  protected refEnDb: PassEncrypt | undefined;
 
   /**
    * initiates the nedb database and calls the super constructor
@@ -25,7 +25,7 @@ export default abstract class Database<T> {
     database: string,
     userDataPath = '',
     databaseVersion?: string,
-    enDb?:PassEncrypt
+    enDb?: PassEncrypt
   ) {
     this.dbName = database;
     this.db = new NedbPromise(
