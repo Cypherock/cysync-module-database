@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 
 import NedbPromise from './nedbPromise';
 import PassEncrypt from './../dbs/passHash';
-
+import { PassEncryptError, PassEncryptErrType } from '..';
 /**
  * abstract class to initiate the database.
  */
@@ -32,7 +32,25 @@ export default abstract class Database<T> {
       new DataStore<T>({
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
-        autoload: true
+        autoload: true,
+        beforeDeserialization(inp: string) {
+          if (database !== 'xpubs') {
+            return inp;
+          }
+          if (!enDb) {
+            throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
+          }
+          return enDb.decryptData(inp);
+        },
+        afterSerialization(inp: string) {
+          if (database !== 'xpubs') {
+            return inp;
+          }
+          if (!enDb) {
+            throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
+          }
+          return enDb.encryptData(inp);
+        }
       })
     );
     this.databaseVersion = databaseVersion;

@@ -3,8 +3,6 @@ import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
 import PassEncrypt from './passHash';
 
-import { PassEncryptError, PassEncryptErrType } from '.';
-
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.
@@ -23,92 +21,21 @@ export default class XpubDB extends Service<Xpub> {
     });
   }
 
-  private async decryptXpub(output: Xpub) {
-    if (!this.refEnDb) {
-      throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
-    }
-    output.totalBalance.balance = this.refEnDb.decryptData(
-      output.totalBalance.balance
-    );
-    output.totalBalance.unconfirmedBalance = this.refEnDb.decryptData(
-      output.totalBalance.unconfirmedBalance
-    );
-
-    output.xpubBalance.balance = this.refEnDb.decryptData(
-      output.xpubBalance.balance
-    );
-    output.xpubBalance.unconfirmedBalance = this.refEnDb.decryptData(
-      output.xpubBalance.unconfirmedBalance
-    );
-
-    if (output.zpubBalance) {
-      output.zpubBalance.balance = this.refEnDb.decryptData(
-        output.zpubBalance.balance
-      );
-      output.zpubBalance.unconfirmedBalance = this.refEnDb.decryptData(
-        output.zpubBalance.unconfirmedBalance
-      );
-    }
-
-    output.xpub = this.refEnDb.decryptData(output.xpub);
-    if (output.zpub) {
-      output.zpub = this.refEnDb.decryptData(output.zpub);
-    }
-    return true;
-  }
-
-  private async encryptXpub(temp: Xpub) {
-    if (!this.refEnDb) {
-      throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
-    }
-    temp.xpubBalance.balance = this.refEnDb.encryptData(
-      temp.xpubBalance.balance
-    );
-    temp.xpubBalance.unconfirmedBalance = this.refEnDb.encryptData(
-      temp.xpubBalance.unconfirmedBalance
-    );
-
-    if (temp.zpubBalance) {
-      temp.zpubBalance.balance = this.refEnDb.encryptData(
-        temp.zpubBalance.balance
-      );
-      temp.zpubBalance.unconfirmedBalance = this.refEnDb.encryptData(
-        temp.zpubBalance.unconfirmedBalance
-      );
-    }
-
-    temp.totalBalance.balance = this.refEnDb.encryptData(
-      temp.xpubBalance.balance
-    );
-    temp.totalBalance.unconfirmedBalance = this.refEnDb.encryptData(
-      temp.xpubBalance.unconfirmedBalance
-    );
-
-    temp.xpub = this.refEnDb.encryptData(temp.xpub);
-    if (temp.zpub) {
-      temp.zpub = this.refEnDb.encryptData(temp.zpub);
-    }
-  }
-
-  public async reEncryptXpub(outputs: Xpub[], passcodeUpdated?: boolean) {
+  public async updateAll(outputs: Xpub[]) {
     for (const output of outputs) {
-      await this.decryptXpub(output);
-      if (passcodeUpdated) {
-        const temp: Xpub = { ...output };
-        this.encryptXpub(temp);
-        await this.db.update(
-          { walletId: output.walletId, coin: output.coin },
-          {
-            $set: {
-              xpub: temp.xpub,
-              totalBalance: temp.totalBalance,
-              zpubBalance: temp.zpubBalance,
-              xpubBalance: temp.xpubBalance,
-              zpub: temp.zpub
-            }
+      const temp: Xpub = { ...output };
+      await this.db.update(
+        { walletId: output.walletId, coin: output.coin },
+        {
+          $set: {
+            xpub: temp.xpub,
+            totalBalance: temp.totalBalance,
+            zpubBalance: temp.zpubBalance,
+            xpubBalance: temp.xpubBalance,
+            zpub: temp.zpub
           }
-        );
-      }
+        }
+      );
     }
   }
 
@@ -141,14 +68,7 @@ export default class XpubDB extends Service<Xpub> {
     }
 
     const outputs: Xpub[] = await this.db.find(dbQuery).exec();
-    try {
-      this.reEncryptXpub(outputs);
-      return outputs;
-    } catch (e) {
-      this.deleteAll();
-      logger.error(e);
-    }
-    return null;
+    return outputs;
   };
 
   /**
@@ -157,14 +77,7 @@ export default class XpubDB extends Service<Xpub> {
    */
   public getByCoin = async (coin: string) => {
     const outputs: Xpub[] = await this.db.find({ coin }).exec();
-    try {
-      this.reEncryptXpub(outputs);
-      return outputs;
-    } catch (e) {
-      this.deleteAll();
-      logger.error(e);
-    }
-    return null;
+    return outputs;
   };
 
   /**
@@ -173,14 +86,7 @@ export default class XpubDB extends Service<Xpub> {
    */
   public async getByWalletId(walletId: string) {
     const outputs: Xpub[] = await this.db.find({ walletId }).exec();
-    try {
-      this.reEncryptXpub(outputs);
-      return outputs;
-    } catch (e) {
-      this.deleteAll();
-      logger.error(e);
-    }
-    return null;
+    return outputs;
   }
 
   /**
@@ -190,13 +96,7 @@ export default class XpubDB extends Service<Xpub> {
    */
   public async getByWalletIdandCoin(walletId: string, coin: string) {
     const output = await this.db.findOne({ walletId, coin });
-    try {
-      await this.decryptXpub(output);
-      return output;
-    } catch (e) {
-      logger.error(e);
-    }
-    return null;
+    return output;
   }
 
   /**
@@ -204,8 +104,6 @@ export default class XpubDB extends Service<Xpub> {
    * @param xpub - the Xpub object
    */
   public async insert(xpub: Xpub) {
-    this.encryptXpub(xpub);
-
     return this.db
       .update(
         { xpub: xpub.xpub, coin: xpub.coin },
@@ -221,9 +119,7 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin.
    */
   public async delete(xpub: string, coin: string) {
-    const tempXpub = this.refEnDb ? this.refEnDb.encryptData(xpub) : xpub;
-
-    return this.db.remove({ tempXpub, coin }).then(() => this.emit('delete'));
+    return this.db.remove({ xpub, coin }).then(() => this.emit('delete'));
   }
 
   /**
@@ -253,12 +149,8 @@ export default class XpubDB extends Service<Xpub> {
    * @param data - the data to be added.
    */
   public async updateByXpub(xpub: string, coin: any, data: any) {
-    let tempXpub = xpub;
-    if (this.refEnDb) {
-      tempXpub = this.refEnDb.encryptData(xpub);
-    }
     return this.db
-      .update({ tempXpub, coin }, { $set: data })
+      .update({ xpub, coin }, { $set: data })
       .then(() => this.emit('update'));
   }
 
@@ -270,17 +162,8 @@ export default class XpubDB extends Service<Xpub> {
    */
 
   public async updateBalance(xpub: string, coin: string, balance: XpubBalance) {
-    let tempXpub = xpub;
-    if (this.refEnDb) {
-      tempXpub = this.refEnDb.encryptData(xpub);
-      balance.balance = this.refEnDb.encryptData(balance.balance);
-      balance.unconfirmedBalance = this.refEnDb.encryptData(
-        balance.unconfirmedBalance
-      );
-    }
-
     return this.db
-      .update({ tempXpub, coin }, { $set: { xpubBalance: balance } })
+      .update({ xpub, coin }, { $set: { xpubBalance: balance } })
       .then(() => this.emit('update'));
   }
 
@@ -295,17 +178,8 @@ export default class XpubDB extends Service<Xpub> {
     coin: string,
     balance: XpubBalance
   ) {
-    let tempXpub = xpub;
-    if (this.refEnDb) {
-      tempXpub = this.refEnDb.encryptData(xpub);
-      balance.balance = this.refEnDb.encryptData(balance.balance);
-      balance.unconfirmedBalance = this.refEnDb.encryptData(
-        balance.unconfirmedBalance
-      );
-    }
-
     return this.db
-      .update({ tempXpub, coin }, { $set: { zpubBalance: balance } })
+      .update({ xpub, coin }, { $set: { zpubBalance: balance } })
       .then(() => this.emit('update'));
   }
 
@@ -320,17 +194,8 @@ export default class XpubDB extends Service<Xpub> {
     coin: string,
     balance: XpubBalance
   ) {
-    let tempXpub = xpub;
-    if (this.refEnDb) {
-      tempXpub = this.refEnDb.encryptData(xpub);
-      balance.balance = this.refEnDb.encryptData(balance.balance);
-      balance.unconfirmedBalance = this.refEnDb.encryptData(
-        balance.unconfirmedBalance
-      );
-    }
-
     return this.db
-      .update({ tempXpub, coin }, { $set: { totalBalance: balance } })
+      .update({ xpub, coin }, { $set: { totalBalance: balance } })
       .then(() => this.emit('update'));
   }
 }
