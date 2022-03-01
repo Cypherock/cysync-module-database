@@ -23,16 +23,11 @@ export default class XpubDB extends Service<Xpub> {
 
   public async updateAll(outputs: Xpub[]) {
     for (const output of outputs) {
-      const temp: Xpub = { ...output };
       await this.db.update(
         { walletId: output.walletId, coin: output.coin },
         {
           $set: {
-            xpub: temp.xpub,
-            totalBalance: temp.totalBalance,
-            zpubBalance: temp.zpubBalance,
-            xpubBalance: temp.xpubBalance,
-            zpub: temp.zpub
+            output
           }
         }
       );
