@@ -1,7 +1,7 @@
 import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
-import PassEncrypt from './passHash';
+import PassEncrypt, { PassEncryptError, PassEncryptErrType } from './passHash';
 
 
 /**
@@ -23,9 +23,9 @@ export default class XpubDB extends Service<Xpub> {
     });
   }
 
-  public async updatePostEn(output:Xpub){
+  private async decryptXpub(output:Xpub){
     if(!this.refEnDb){
-      return false;
+      throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
     }
     output.totalBalance.balance = await this.refEnDb.decryptData(output.totalBalance.balance);
     output.totalBalance.unconfirmedBalance = await this.refEnDb.decryptData(output.totalBalance.unconfirmedBalance);
@@ -45,34 +45,36 @@ export default class XpubDB extends Service<Xpub> {
     return true;
   }
 
-  public async updatePostEnAll(outputs:Xpub[], flag?:boolean){
+  private async encryptXpub(temp:Xpub){
+    if(!this.refEnDb){
+      throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
+    }
+    temp.xpubBalance.balance = await this.refEnDb.encryptData(temp.xpubBalance.balance);
+    temp.xpubBalance.unconfirmedBalance = await this.refEnDb.encryptData(temp.xpubBalance.unconfirmedBalance);
+    
+    if(temp.zpubBalance){
+      temp.zpubBalance.balance = await this.refEnDb.encryptData(temp.zpubBalance.balance);
+      temp.zpubBalance.unconfirmedBalance = await this.refEnDb.encryptData(temp.zpubBalance.unconfirmedBalance);
+    }
+
+    temp.totalBalance.balance = await this.refEnDb.encryptData(temp.xpubBalance.balance);
+    temp.totalBalance.unconfirmedBalance = await this.refEnDb.encryptData(temp.xpubBalance.unconfirmedBalance);
+
+    temp.xpub = await this.refEnDb.encryptData(temp.xpub);
+    if(temp.zpub){
+      temp.zpub = await this.refEnDb.encryptData(temp.zpub);
+    }
+  }
+
+  public async reEncryptXpub(outputs:Xpub[], passcodeUpdated?:boolean){
     for(let output of outputs){
-      if(!await this.updatePostEn(output)){
-        throw "ref enDb is not defined";
-      }
-      if(flag){
+      await this.decryptXpub(output);
+      if(passcodeUpdated){
         let temp:Xpub = {...output};
-        if(this.refEnDb){
-          temp.xpubBalance.balance = await this.refEnDb.encryptData(temp.xpubBalance.balance);
-          temp.xpubBalance.unconfirmedBalance = await this.refEnDb.encryptData(temp.xpubBalance.unconfirmedBalance);
-          
-          if(temp.zpubBalance){
-            temp.zpubBalance.balance = await this.refEnDb.encryptData(temp.zpubBalance.balance);
-            temp.zpubBalance.unconfirmedBalance = await this.refEnDb.encryptData(temp.zpubBalance.unconfirmedBalance);
-          }
-    
-          temp.totalBalance.balance = await this.refEnDb.encryptData(temp.xpubBalance.balance);
-          temp.totalBalance.unconfirmedBalance = await this.refEnDb.encryptData(temp.xpubBalance.unconfirmedBalance);
-    
-          temp.xpub = await this.refEnDb.encryptData(output.xpub);
-          if(output.zpub){
-            temp.zpub = await this.refEnDb.encryptData(output.zpub);
-          }
-        }
+        this.encryptXpub(temp);
         await this.db.update({walletId:output.walletId, coin:output.coin}, {$set: { xpub:temp.xpub, totalBalance:temp.totalBalance, zpubBalance:temp.zpubBalance, xpubBalance:temp.xpubBalance, zpub:temp.zpub }});
       }
     }
-    return outputs;
   }
 
   /**
@@ -105,7 +107,7 @@ export default class XpubDB extends Service<Xpub> {
 
     let outputs:Xpub[] = await this.db.find(dbQuery).exec();
     try{
-      this.updatePostEnAll(outputs);
+      this.reEncryptXpub(outputs);
       return outputs;
      }catch(e){
        this.deleteAll();
@@ -121,7 +123,7 @@ export default class XpubDB extends Service<Xpub> {
   public getByCoin = async (coin: string) => {
     let outputs:Xpub[] = await this.db.find({ coin }).exec();
     try{
-      this.updatePostEnAll(outputs);
+      this.reEncryptXpub(outputs);
       return outputs;
      }catch(e){
        this.deleteAll();
@@ -137,7 +139,7 @@ export default class XpubDB extends Service<Xpub> {
   public async getByWalletId(walletId: string) {
     let outputs:Xpub[] = await this.db.find({ walletId }).exec();
      try{
-       this.updatePostEnAll(outputs);
+       this.reEncryptXpub(outputs);
        return outputs;
       }catch(e){
         this.deleteAll();
@@ -155,7 +157,7 @@ export default class XpubDB extends Service<Xpub> {
   public async getByWalletIdandCoin(walletId: string, coin: string) {
     let output = await this.db.findOne({ walletId, coin });
     try{
-      await this.updatePostEn(output);
+      await this.decryptXpub(output);
       return output;
     }catch(e){
       logger.error(e);
@@ -169,24 +171,8 @@ export default class XpubDB extends Service<Xpub> {
    */
   public async insert(xpub: Xpub) {
 
-    if(this.refEnDb){
-      xpub.xpubBalance.balance = await this.refEnDb.encryptData(xpub.xpubBalance.balance);
-      xpub.xpubBalance.unconfirmedBalance = await this.refEnDb.encryptData(xpub.xpubBalance.unconfirmedBalance);
-      
-      if(xpub.zpubBalance){
-        xpub.zpubBalance.balance = await this.refEnDb.encryptData(xpub.zpubBalance.balance);
-        xpub.zpubBalance.unconfirmedBalance = await this.refEnDb.encryptData(xpub.zpubBalance.unconfirmedBalance);
-      }
-
-      xpub.totalBalance.balance = await this.refEnDb.encryptData(xpub.xpubBalance.balance);
-      xpub.totalBalance.unconfirmedBalance = await this.refEnDb.encryptData(xpub.xpubBalance.unconfirmedBalance);
-
-      xpub.xpub = await this.refEnDb.encryptData(xpub.xpub);
-      if(xpub.zpub){
-        xpub.zpub = await this.refEnDb.encryptData(xpub.zpub);
-      }
-    }
-
+    this.encryptXpub(xpub);
+    
     return this.db
       .update(
         { xpub: xpub.xpub, coin: xpub.coin },

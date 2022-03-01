@@ -1,6 +1,34 @@
 var aesjs = require('aes-js');
 var macaddress = require('macaddress');
 
+
+export enum PassEncryptErrType {
+  DECRYPTION_FAIL,
+  OBJ_UNDEF
+}
+
+const defaultErrorMessages = {
+  [PassEncryptErrType.DECRYPTION_FAIL]: 'decryption failure',
+  [PassEncryptErrType.OBJ_UNDEF]: 'pass-encrypt obj not present'
+};
+
+export class PassEncryptError extends Error {
+  public errorType: PassEncryptErrType;
+  constructor(errorType: PassEncryptErrType, msg?: string) {
+    let message = msg;
+
+    if (!msg && defaultErrorMessages[errorType]) {
+      message = defaultErrorMessages[errorType];
+    }
+
+    super(message);
+    this.errorType = errorType;
+
+    Object.setPrototypeOf(this, PassEncryptError.prototype);
+  }
+}
+
+
 export default class PassEncrypt{
   private passHash = [];
   private mac:string = '';
@@ -9,7 +37,7 @@ export default class PassEncrypt{
   public setPassHash(passhash:string){
     if(passhash == null){
       this.aesCtr = undefined;
-      this.passHash.slice(0, this.passHash.length);
+      this.passHash.splice(0, this.passHash.length);
       return;
     }
 
@@ -44,7 +72,7 @@ export default class PassEncrypt{
     let data = aesjs.utils.utf8.fromBytes(this.aesCtr.decrypt(aesjs.utils.hex.toBytes(encrypted)));
     let [verified, extract] = this.extractDataAndVerifyMac(data);
     if(!verified){
-      throw "decryption failure";
+      throw new PassEncryptError(PassEncryptErrType.DECRYPTION_FAIL);
     }
     else{
       return extract;
