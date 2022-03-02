@@ -20,22 +20,21 @@ export {
   Erc20DB,
   PassEncrypt
 };
-export enum PassEncryptErrType {
+export enum DatabaseErrType {
   DECRYPTION_FAIL,
   OBJ_UNDEF,
-  ANALYTICS_ID_UNDEF
+  ID_UNDEF
 }
 
 const defaultErrorMessages = {
-  [PassEncryptErrType.DECRYPTION_FAIL]: 'decryption failure',
-  [PassEncryptErrType.OBJ_UNDEF]: 'pass-encrypt obj not present',
-  [PassEncryptErrType.ANALYTICS_ID_UNDEF]:
-    'analytics id not defined. unexpected err.'
+  [DatabaseErrType.DECRYPTION_FAIL]: 'decryption failure',
+  [DatabaseErrType.OBJ_UNDEF]: 'pass-encrypt obj not present',
+  [DatabaseErrType.ID_UNDEF]: 'analytics id not defined. unexpected err.'
 };
 
-export class PassEncryptError extends Error {
-  public errorType: PassEncryptErrType;
-  constructor(errorType: PassEncryptErrType, msg?: string) {
+export class DatabaseError extends Error {
+  public errorType: DatabaseErrType;
+  constructor(errorType: DatabaseErrType, msg?: string) {
     let message = msg;
 
     if (!msg && defaultErrorMessages[errorType]) {
@@ -45,6 +44,6 @@ export class PassEncryptError extends Error {
     super(message);
     this.errorType = errorType;
 
-    Object.setPrototypeOf(this, PassEncryptError.prototype);
+    Object.setPrototypeOf(this, DatabaseError.prototype);
   }
 }

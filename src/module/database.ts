@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 
 import NedbPromise from './nedbPromise';
 import PassEncrypt from './../dbs/passHash';
-import { PassEncryptError, PassEncryptErrType } from '..';
+import { DatabaseError, DatabaseErrType } from '..';
 /**
  * abstract class to initiate the database.
  */
@@ -38,7 +38,7 @@ export default abstract class Database<T> {
             return inp;
           }
           if (!enDb) {
-            throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
+            throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
           }
           return enDb.decryptData(inp);
         },
@@ -47,7 +47,7 @@ export default abstract class Database<T> {
             return inp;
           }
           if (!enDb) {
-            throw new PassEncryptError(PassEncryptErrType.OBJ_UNDEF);
+            throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
           }
           return enDb.encryptData(inp);
         }

@@ -1,26 +1,24 @@
 import aesjs from 'aes-js';
-import { PassEncryptError, PassEncryptErrType } from '.';
+import { DatabaseError, DatabaseErrType } from '.';
 import crypto from 'crypto';
 export default class PassEncrypt {
-  private passHash: Uint8Array = new Uint8Array();
-  private analyticsIdHash: string = '';
-  private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
-    new aesjs.ModeOfOperation.ctr(this.passHash);
+  private passHash: Uint8Array = new Uint8Array(16);
+  private IdHash: string = '';
+  private aesCtr: any = undefined;
   private passSet: boolean = false;
 
-  constructor(analyticsIdIn: string) {
-    if (analyticsIdIn === undefined) {
-      throw new PassEncryptError(PassEncryptErrType.ANALYTICS_ID_UNDEF);
+  constructor(IdIn: string) {
+    if (IdIn === undefined) {
+      throw new DatabaseError(DatabaseErrType.ID_UNDEF);
     }
-    this.analyticsIdHash = crypto
-      .createHmac('sha256', analyticsIdIn)
-      .digest('hex');
+    this.IdHash = crypto.createHmac('sha256', IdIn).digest('hex');
   }
 
   public setPassHash(passhash: string) {
     if (passhash == null) {
-      this.passHash = new Uint8Array();
-      this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
+      this.passHash = new Uint8Array(16);
+      this.aesCtr = undefined;
+      this.passSet = false;
       return;
     }
     this.passSet = true;
@@ -31,22 +29,19 @@ export default class PassEncrypt {
   }
 
   public encryptData(data: string) {
-    if (!this.passSet) {
+    if (!this.passSet || this.passHash.length === 0) {
       return data;
     }
 
-    const tempdata = data + this.analyticsIdHash;
+    const tempdata = data + this.IdHash;
     return aesjs.utils.hex.fromBytes(
       this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(tempdata))
     );
   }
 
-  public extractDataAndVerifyanalyticsId(
-    decryptedData: string
-  ): [boolean, string] {
+  public extractDataAndVerifyId(decryptedData: string): [boolean, string] {
     return [
-      this.analyticsIdHash ===
-        decryptedData.substring(decryptedData.length - 64),
+      this.IdHash === decryptedData.substring(decryptedData.length - 64),
       decryptedData.substring(0, decryptedData.length - 64)
     ];
   }
@@ -59,17 +54,17 @@ export default class PassEncrypt {
     const data = aesjs.utils.utf8.fromBytes(
       this.aesCtr.decrypt(aesjs.utils.hex.toBytes(encrypted))
     );
-    const [verified, extract] = this.extractDataAndVerifyanalyticsId(data);
+    const [verified, extract] = this.extractDataAndVerifyId(data);
     if (!verified) {
-      throw new PassEncryptError(PassEncryptErrType.DECRYPTION_FAIL);
+      throw new DatabaseError(DatabaseErrType.DECRYPTION_FAIL);
     } else {
       return extract;
     }
   }
 
   public DestroyHash() {
-    this.passHash = new Uint8Array();
-    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
+    this.passHash = new Uint8Array(16);
     this.passSet = false;
+    this.aesCtr = undefined;
   }
 }
