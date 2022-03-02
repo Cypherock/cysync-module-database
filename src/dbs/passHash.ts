@@ -4,7 +4,8 @@ import crypto from 'crypto';
 export default class PassEncrypt {
   private passHash: Uint8Array = new Uint8Array(16);
   private IdHash: string = '';
-  private aesCtr: any = undefined;
+  private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
+    new aesjs.ModeOfOperation.ctr(this.passHash);
   private passSet: boolean = false;
 
   constructor(IdIn: string) {
@@ -17,7 +18,7 @@ export default class PassEncrypt {
   public setPassHash(passhash: string) {
     if (passhash == null) {
       this.passHash = new Uint8Array(16);
-      this.aesCtr = undefined;
+      this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
       this.passSet = false;
       return;
     }
@@ -65,6 +66,6 @@ export default class PassEncrypt {
   public DestroyHash() {
     this.passHash = new Uint8Array(16);
     this.passSet = false;
-    this.aesCtr = undefined;
+    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
   }
 }
