@@ -1,9 +1,9 @@
 import aesjs from 'aes-js';
-import { DatabaseError, DatabaseErrType } from '.';
+import { DatabaseError, DatabaseErrType } from '../errors';
 import crypto from 'crypto';
 export default class PassEncrypt {
   private passHash: Uint8Array = new Uint8Array(16);
-  private IdHash: string = '';
+  private idHash: string = '';
   private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
     new aesjs.ModeOfOperation.ctr(this.passHash);
   private passSet: boolean = false;
@@ -12,7 +12,7 @@ export default class PassEncrypt {
     if (IdIn === undefined) {
       throw new DatabaseError(DatabaseErrType.ID_UNDEF);
     }
-    this.IdHash = crypto.createHmac('sha256', IdIn).digest('hex');
+    this.idHash = crypto.createHmac('sha256', IdIn).digest('hex');
   }
 
   public setPassHash(passhash: string) {
@@ -34,7 +34,7 @@ export default class PassEncrypt {
       return data;
     }
 
-    const tempdata = data + this.IdHash;
+    const tempdata = data + this.idHash;
     return aesjs.utils.hex.fromBytes(
       this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(tempdata))
     );
@@ -42,7 +42,7 @@ export default class PassEncrypt {
 
   public extractDataAndVerifyId(decryptedData: string): [boolean, string] {
     return [
-      this.IdHash === decryptedData.substring(decryptedData.length - 64),
+      this.idHash === decryptedData.substring(decryptedData.length - 64),
       decryptedData.substring(0, decryptedData.length - 64)
     ];
   }
@@ -63,7 +63,7 @@ export default class PassEncrypt {
     }
   }
 
-  public DestroyHash() {
+  public destroyHash() {
     this.passHash = new Uint8Array(16);
     this.passSet = false;
     this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);

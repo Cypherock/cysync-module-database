@@ -3,7 +3,6 @@ import { EventEmitter } from 'events';
 
 import NedbPromise from './nedbPromise';
 import PassEncrypt from './../dbs/passHash';
-import { DatabaseError, DatabaseErrType } from '..';
 /**
  * abstract class to initiate the database.
  */
@@ -33,24 +32,12 @@ export default abstract class Database<T> {
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
         autoload: true,
-        beforeDeserialization(inp: string) {
-          if (database !== 'xpubs') {
-            return inp;
-          }
-          if (!enDb) {
-            throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
-          }
+        beforeDeserialization: enDb ? (inp: string)=>{
           return enDb.decryptData(inp);
-        },
-        afterSerialization(inp: string) {
-          if (database !== 'xpubs') {
-            return inp;
-          }
-          if (!enDb) {
-            throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
-          }
+        }:undefined,
+        afterSerialization: enDb ? (inp: string)=> {
           return enDb.encryptData(inp);
-        }
+        }:undefined
       })
     );
     this.databaseVersion = databaseVersion;

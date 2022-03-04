@@ -2,7 +2,7 @@ import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
 import PassEncrypt from './passHash';
-
+import { DatabaseError,DatabaseErrType } from '../errors';
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.
@@ -12,8 +12,13 @@ export default class XpubDB extends Service<Xpub> {
    *  Calls the super constructor with the database name and the base URL to fetch the latest balances.
    * (Could be cypherock server, or any other server)
    */
-  constructor(userDataPath = '', EnDb: PassEncrypt) {
-    super('xpubs', userDataPath, 'v2', EnDb);
+  constructor(userDataPath = '', enDb: PassEncrypt) {
+    super('xpubs', userDataPath, 'v2', enDb);
+    
+    if (!enDb) {
+      throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
+    }
+    
     // To remove previously created index
     this.db.removeIndex('xpub').catch(error => {
       logger.error('Error in removing xpub index');
@@ -27,7 +32,7 @@ export default class XpubDB extends Service<Xpub> {
         { walletId: output.walletId, coin: output.coin },
         {
           $set: {
-            output
+            ...output
           }
         }
       );
@@ -37,7 +42,7 @@ export default class XpubDB extends Service<Xpub> {
   /**
    * returns a promise which resolves to a list of all xpubs in the database.
    */
-  public getAll = async (
+  public getAll = (
     query?: {
       xpub?: string;
       zpub?: string;
@@ -62,26 +67,23 @@ export default class XpubDB extends Service<Xpub> {
         .exec();
     }
 
-    const outputs: Xpub[] = await this.db.find(dbQuery).exec();
-    return outputs;
+    return this.db.find(dbQuery).exec();
   };
 
   /**
    * returns a promise which resolves to a list of xpubs of a specific coin.
    * @param coin - the coin abbr whose xpubs is to be retrieved
    */
-  public getByCoin = async (coin: string) => {
-    const outputs: Xpub[] = await this.db.find({ coin }).exec();
-    return outputs;
+  public getByCoin = (coin: string) => {
+    return this.db.find({ coin }).exec();
   };
 
   /**
    * returns a promise which resolves to a list of xpubs from a specific wallet.
    * @param walletId - the ID of the wallet whose xpubs are to be retrieved.
    */
-  public async getByWalletId(walletId: string) {
-    const outputs: Xpub[] = await this.db.find({ walletId }).exec();
-    return outputs;
+  public getByWalletId(walletId: string) {
+    return this.db.find({ walletId }).exec();
   }
 
   /**
@@ -89,9 +91,8 @@ export default class XpubDB extends Service<Xpub> {
    * @param walletId - the ID of the wallet whose xpub is to be retrieved.
    * @param coin - the coin whose xpub is to be retrieved.
    */
-  public async getByWalletIdandCoin(walletId: string, coin: string) {
-    const output = await this.db.findOne({ walletId, coin });
-    return output;
+  public getByWalletIdandCoin(walletId: string, coin: string) {
+    return this.db.findOne({ walletId, coin });
   }
 
   /**
