@@ -2,7 +2,7 @@ import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
 import logger from '../utils/logger';
 import PassEncrypt from './passHash';
-import { DatabaseError,DatabaseErrType } from '../errors';
+import { DatabaseError, DatabaseErrType } from '../errors';
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.
@@ -14,11 +14,11 @@ export default class XpubDB extends Service<Xpub> {
    */
   constructor(userDataPath = '', enDb: PassEncrypt) {
     super('xpubs', userDataPath, 'v2', enDb);
-    
+
     if (!enDb) {
       throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
     }
-    
+
     // To remove previously created index
     this.db.removeIndex('xpub').catch(error => {
       logger.error('Error in removing xpub index');

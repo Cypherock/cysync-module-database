@@ -32,12 +32,16 @@ export default abstract class Database<T> {
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
         autoload: true,
-        beforeDeserialization: enDb ? (inp: string)=>{
-          return enDb.decryptData(inp);
-        }:undefined,
-        afterSerialization: enDb ? (inp: string)=> {
-          return enDb.encryptData(inp);
-        }:undefined
+        beforeDeserialization: enDb
+          ? (inp: string) => {
+              return enDb.decryptData(inp);
+            }
+          : undefined,
+        afterSerialization: enDb
+          ? (inp: string) => {
+              return enDb.encryptData(inp);
+            }
+          : undefined
       })
     );
     this.databaseVersion = databaseVersion;
