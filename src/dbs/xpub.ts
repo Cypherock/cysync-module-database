@@ -16,7 +16,7 @@ export default class XpubDB extends Service<Xpub> {
     super('xpubs', userDataPath, 'v2', enDb);
 
     if (!enDb) {
-      throw new DatabaseError(DatabaseErrType.OBJ_UNDEF);
+      throw new DatabaseError(DatabaseErrType.PASS_ENC_UNDEFINED);
     }
 
     // To remove previously created index

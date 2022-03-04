@@ -1,12 +1,12 @@
 export enum DatabaseErrType {
   DECRYPTION_FAIL,
-  OBJ_UNDEF,
+  PASS_ENC_UNDEFINED,
   ID_UNDEF
 }
 
 const defaultErrorMessages = {
   [DatabaseErrType.DECRYPTION_FAIL]: 'decryption failure',
-  [DatabaseErrType.OBJ_UNDEF]: 'pass-encrypt obj not present',
+  [DatabaseErrType.PASS_ENC_UNDEFINED]: 'pass-encrypt obj not present',
   [DatabaseErrType.ID_UNDEF]: 'id not defined. unexpected err.'
 };
 
