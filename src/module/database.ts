@@ -27,25 +27,25 @@ export default abstract class Database<T> {
     enDb?: PassEncrypt
   ) {
     this.dbName = database;
+    this.refEnDb = enDb;
     this.db = new NedbPromise(
       new DataStore<T>({
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
         autoload: true,
-        beforeDeserialization: enDb
+        beforeDeserialization: this.refEnDb
           ? (inp: string) => {
-              return enDb.decryptData(inp);
+              return this.refEnDb ? this.refEnDb.decryptData(inp) : inp;
             }
           : undefined,
         afterSerialization: enDb
           ? (inp: string) => {
-              return enDb.encryptData(inp);
+              return this.refEnDb ? this.refEnDb.encryptData(inp):inp;
             }
           : undefined
       })
     );
     this.databaseVersion = databaseVersion;
-    this.refEnDb = enDb;
   }
 
   /**
