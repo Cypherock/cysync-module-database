@@ -29,7 +29,10 @@ export default class PassEncrypt {
     if (!this.passSet || this.passHash.length === 0) {
       return data;
     }
-    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash, new aesjs.Counter(5));
+    this.aesCtr = new aesjs.ModeOfOperation.ctr(
+      this.passHash,
+      new aesjs.Counter(5)
+    );
     const tempdata = data + this.idHash;
     return aesjs.utils.hex.fromBytes(
       this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(tempdata))
@@ -48,7 +51,10 @@ export default class PassEncrypt {
       return encrypted;
     }
 
-    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash, new aesjs.Counter(5));
+    this.aesCtr = new aesjs.ModeOfOperation.ctr(
+      this.passHash,
+      new aesjs.Counter(5)
+    );
     const data = aesjs.utils.utf8.fromBytes(
       this.aesCtr.decrypt(aesjs.utils.hex.toBytes(encrypted))
     );
