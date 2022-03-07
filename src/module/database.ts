@@ -40,7 +40,7 @@ export default abstract class Database<T> {
           : undefined,
         afterSerialization: enDb
           ? (inp: string) => {
-              return this.refEnDb ? this.refEnDb.encryptData(inp):inp;
+              return this.refEnDb ? this.refEnDb.encryptData(inp) : inp;
             }
           : undefined
       })

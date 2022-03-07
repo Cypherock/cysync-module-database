@@ -40,6 +40,9 @@ export default class PassEncrypt {
   }
 
   public extractDataAndVerifyId(decryptedData: string): [boolean, string] {
+    if (decryptedData.length <= 64) {
+      throw new DatabaseError(DatabaseErrType.UNEXPECTED_DATA_LEN);
+    }
     return [
       this.idHash === decryptedData.substring(decryptedData.length - 64),
       decryptedData.substring(0, decryptedData.length - 64)
