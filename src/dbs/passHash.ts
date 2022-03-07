@@ -2,7 +2,7 @@ import aesjs from 'aes-js';
 import { DatabaseError, DatabaseErrType } from '../errors';
 import crypto from 'crypto';
 export default class PassEncrypt {
-  private passHash: Uint8Array = new Uint8Array(16);
+  private passHash: Uint8Array = new Uint8Array(32);
   private idHash: string = '';
   private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
     new aesjs.ModeOfOperation.ctr(this.passHash);
@@ -16,24 +16,20 @@ export default class PassEncrypt {
   }
 
   public setPassHash(passhash: string) {
-    if (passhash == null) {
-      this.passHash = new Uint8Array(16);
-      this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
+    if (passhash == null || passhash.length !== 64) {
+      this.passHash = new Uint8Array(32);
       this.passSet = false;
       return;
     }
     this.passSet = true;
-    this.passHash = aesjs.utils.utf8.toBytes(
-      passhash.substring(passhash.length - 16)
-    );
-    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
+    this.passHash = aesjs.utils.utf8.toBytes(passhash.substring(32)); //sha2
   }
 
   public encryptData(data: string) {
     if (!this.passSet || this.passHash.length === 0) {
       return data;
     }
-
+    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash, new aesjs.Counter(5));
     const tempdata = data + this.idHash;
     return aesjs.utils.hex.fromBytes(
       this.aesCtr.encrypt(aesjs.utils.utf8.toBytes(tempdata))
@@ -52,6 +48,7 @@ export default class PassEncrypt {
       return encrypted;
     }
 
+    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash, new aesjs.Counter(5));
     const data = aesjs.utils.utf8.fromBytes(
       this.aesCtr.decrypt(aesjs.utils.hex.toBytes(encrypted))
     );
@@ -64,8 +61,7 @@ export default class PassEncrypt {
   }
 
   public destroyHash() {
-    this.passHash = new Uint8Array(16);
+    this.passHash = new Uint8Array(32);
     this.passSet = false;
-    this.aesCtr = new aesjs.ModeOfOperation.ctr(this.passHash);
   }
 }
