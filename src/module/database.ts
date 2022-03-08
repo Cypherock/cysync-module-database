@@ -35,13 +35,13 @@ export default abstract class Database<T> {
         autoload: true,
         beforeDeserialization: this.refEnDb
           ? (inp: string) => {
-              inp = inp.split('\n').join(' ');
               return this.refEnDb ? this.refEnDb.decryptData(inp) : inp;
             }
           : undefined,
         afterSerialization: enDb
           ? (inp: string) => {
-              return this.refEnDb ? this.refEnDb.encryptData(inp) : inp;
+              const tempinp = inp.split('\n').join(' ');
+              return this.refEnDb ? this.refEnDb.encryptData(tempinp) : tempinp;
             }
           : undefined,
         corruptAlertThreshold: 1
