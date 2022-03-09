@@ -1,5 +1,5 @@
 import aesjs from 'aes-js';
-import { DatabaseError, DatabaseErrType } from '../errors';
+import { DatabaseError, DatabaseErrorType } from '../errors';
 import crypto from 'crypto';
 export default class PassEncrypt {
   private passHash: Uint8Array = new Uint8Array(32);
@@ -8,11 +8,11 @@ export default class PassEncrypt {
     new aesjs.ModeOfOperation.ctr(this.passHash);
   private passSet: boolean = false;
 
-  constructor(IdIn: string) {
-    if (IdIn === undefined) {
-      throw new DatabaseError(DatabaseErrType.ID_UNDEF);
+  constructor(idIn: string) {
+    if (idIn === undefined) {
+      throw new DatabaseError(DatabaseErrorType.UNIQUE_ID_UNDEFINED);
     }
-    this.idHash = crypto.createHmac('sha256', IdIn).digest('hex');
+    this.idHash = crypto.createHmac('sha256', idIn).digest('hex');
   }
 
   public setPassHash(passhash: string) {
@@ -41,7 +41,7 @@ export default class PassEncrypt {
 
   public extractDataAndVerifyId(decryptedData: string): [boolean, string] {
     if (decryptedData.length <= 64) {
-      throw new DatabaseError(DatabaseErrType.UNEXPECTED_DATA_LEN);
+      throw new DatabaseError(DatabaseErrorType.UNEXPECTED_DATA_LEN);
     }
     return [
       this.idHash === decryptedData.substring(decryptedData.length - 64),
@@ -63,7 +63,7 @@ export default class PassEncrypt {
     );
     const [verified, extract] = this.extractDataAndVerifyId(data);
     if (!verified) {
-      throw new DatabaseError(DatabaseErrType.DECRYPTION_FAIL);
+      throw new DatabaseError(DatabaseErrorType.DECRYPTION_FAIL);
     } else {
       return extract;
     }
