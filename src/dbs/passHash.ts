@@ -16,19 +16,25 @@ export default class PassEncrypt {
   }
 
   public setPassHash(passhash: string) {
-    if (passhash == null || passhash.length !== 64) {
+    if (passhash == null || !passhash) {
       this.passHash = new Uint8Array(32);
       this.passSet = false;
       return;
     }
+
+    if (passhash.length !== 64) {
+      throw new Error('Invalid password provided in PassEncrypt');
+    }
+
     this.passSet = true;
     this.passHash = aesjs.utils.utf8.toBytes(passhash.substring(32)); //sha2
   }
 
   public encryptData(data: string) {
-    if (!this.passSet || this.passHash.length === 0) {
+    if (!this.passSet) {
       return data;
     }
+
     this.aesCtr = new aesjs.ModeOfOperation.ctr(
       this.passHash,
       new aesjs.Counter(5)

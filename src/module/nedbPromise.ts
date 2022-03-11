@@ -12,6 +12,25 @@ export default class NeDb<T> {
     this.db = database;
   }
 
+  public loadData() {
+    return new Promise<void>((resolve, reject) => {
+      this.db.loadDatabase(err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Force write data to disk
+   */
+  public compactDatafile() {
+    this.db.persistence.compactDatafile();
+  }
+
   public ensureIndex(options: DataStore.EnsureIndexOptions): Promise<void> {
     return new Promise((resolve, reject) => {
       this.db.ensureIndex(options, error => {

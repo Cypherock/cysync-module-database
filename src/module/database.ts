@@ -32,22 +32,33 @@ export default abstract class Database<T> {
       new DataStore<T>({
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
-        autoload: true,
+        autoload: !this.refEnDb,
         beforeDeserialization: this.refEnDb
-          ? (inp: string) => {
-              return this.refEnDb ? this.refEnDb.decryptData(inp) : inp;
+          ? (input: string) => {
+              if (this.refEnDb) {
+                return this.refEnDb.decryptData(input);
+              }
+              return input;
             }
           : undefined,
-        afterSerialization: enDb
-          ? (inp: string) => {
-              const tempinp = inp.split('\n').join(' ');
-              return this.refEnDb ? this.refEnDb.encryptData(tempinp) : tempinp;
+        afterSerialization: this.refEnDb
+          ? (input: string) => {
+              if (this.refEnDb) {
+                return this.refEnDb.encryptData(input);
+              }
+              return input;
             }
-          : undefined,
-        corruptAlertThreshold: 1
+          : undefined
       })
     );
     this.databaseVersion = databaseVersion;
+  }
+
+  /**
+   * Loads the data from the database. To be used before any other operation.
+   */
+  public loadData() {
+    return this.db.loadData();
   }
 
   /**
@@ -59,11 +70,17 @@ export default abstract class Database<T> {
     this.emitter.emit(event, payload);
   }
 
+  public async updateAll(outputs: T[]) {
+    await this.deleteAll();
+    await this.db.insertMany(outputs);
+  }
+
   /**
    * Deletes all the entries
    */
   public async deleteAll() {
-    return this.db.remove({}, { multi: true }).then(() => this.emit('detele'));
+    await this.db.remove({}, { multi: true }).then(() => this.emit('detele'));
+    this.db.compactDatafile();
   }
 
   public createdDBObject(obj: any) {

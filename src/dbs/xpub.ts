@@ -1,6 +1,5 @@
 import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
-import logger from '../utils/logger';
 import PassEncrypt from './passHash';
 import { DatabaseError, DatabaseErrorType } from '../errors';
 /**
@@ -17,19 +16,6 @@ export default class XpubDB extends Service<Xpub> {
 
     if (!enDb) {
       throw new DatabaseError(DatabaseErrorType.PASS_ENC_UNDEFINED);
-    }
-
-    // To remove previously created index
-    this.db.removeIndex('xpub').catch(error => {
-      logger.error('Error in removing xpub index');
-      logger.error(error);
-    });
-  }
-
-  public async updateAll(outputs: Xpub[]) {
-    await this.deleteAll();
-    for (const output of outputs) {
-      await this.db.insert(output);
     }
   }
 
@@ -120,13 +106,6 @@ export default class XpubDB extends Service<Xpub> {
     return this.db
       .remove({ walletId }, { multi: true })
       .then(() => this.emit('delete'));
-  }
-
-  /**
-   * deletes all the data from the database.
-   */
-  public async deleteAll() {
-    return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
   }
 
   /**
