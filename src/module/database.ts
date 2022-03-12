@@ -2,7 +2,7 @@ import DataStore from 'nedb';
 import { EventEmitter } from 'events';
 
 import NedbPromise from './nedbPromise';
-
+import PassEncrypt from './../dbs/passHash';
 /**
  * abstract class to initiate the database.
  */
@@ -11,6 +11,7 @@ export default abstract class Database<T> {
   public db: NedbPromise<T>;
   public emitter = new EventEmitter();
   public databaseVersion: string | undefined;
+  protected refEnDb: PassEncrypt | undefined;
 
   /**
    * initiates the nedb database and calls the super constructor
@@ -22,17 +23,42 @@ export default abstract class Database<T> {
   protected constructor(
     database: string,
     userDataPath = '',
-    databaseVersion?: string
+    databaseVersion?: string,
+    enDb?: PassEncrypt
   ) {
     this.dbName = database;
+    this.refEnDb = enDb;
     this.db = new NedbPromise(
       new DataStore<T>({
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
-        autoload: true
+        autoload: !this.refEnDb,
+        beforeDeserialization: this.refEnDb
+          ? (input: string) => {
+              if (this.refEnDb) {
+                return this.refEnDb.decryptData(input);
+              }
+              return input;
+            }
+          : undefined,
+        afterSerialization: this.refEnDb
+          ? (input: string) => {
+              if (this.refEnDb) {
+                return this.refEnDb.encryptData(input);
+              }
+              return input;
+            }
+          : undefined
       })
     );
     this.databaseVersion = databaseVersion;
+  }
+
+  /**
+   * Loads the data from the database. To be used before any other operation.
+   */
+  public loadData() {
+    return this.db.loadData();
   }
 
   /**
@@ -44,11 +70,17 @@ export default abstract class Database<T> {
     this.emitter.emit(event, payload);
   }
 
+  public async updateAll(outputs: T[]) {
+    await this.deleteAll();
+    await this.db.insertMany(outputs);
+  }
+
   /**
    * Deletes all the entries
    */
   public async deleteAll() {
-    return this.db.remove({}, { multi: true }).then(() => this.emit('detele'));
+    await this.db.remove({}, { multi: true }).then(() => this.emit('detele'));
+    this.db.compactDatafile();
   }
 
   public createdDBObject(obj: any) {

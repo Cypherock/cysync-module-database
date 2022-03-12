@@ -1,7 +1,7 @@
 import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
-import logger from '../utils/logger';
-
+import PassEncrypt from './passHash';
+import { DatabaseError, DatabaseErrorType } from '../errors';
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.
@@ -11,13 +11,12 @@ export default class XpubDB extends Service<Xpub> {
    *  Calls the super constructor with the database name and the base URL to fetch the latest balances.
    * (Could be cypherock server, or any other server)
    */
-  constructor(userDataPath = '') {
-    super('xpubs', userDataPath, 'v2');
-    // To remove previously created index
-    this.db.removeIndex('xpub').catch(error => {
-      logger.error('Error in removing xpub index');
-      logger.error(error);
-    });
+  constructor(userDataPath = '', enDb: PassEncrypt) {
+    super('xpubs', userDataPath, 'v2', enDb);
+
+    if (!enDb) {
+      throw new DatabaseError(DatabaseErrorType.PASS_ENC_UNDEFINED);
+    }
   }
 
   /**
@@ -110,13 +109,6 @@ export default class XpubDB extends Service<Xpub> {
   }
 
   /**
-   * deletes all the data from the database.
-   */
-  public async deleteAll() {
-    return this.db.remove({}, { multi: true }).then(() => this.emit('delete'));
-  }
-
-  /**
    * To upload arbitrary data required by the xpub
    * Example internal / external online wallet names for blockcypher
    * address index for ethereum wallet
@@ -137,11 +129,8 @@ export default class XpubDB extends Service<Xpub> {
    * @param coin - the coin.
    * @param balance - the balance object.
    */
-  public async updateXpubBalance(
-    xpub: string,
-    coin: string,
-    balance: XpubBalance
-  ) {
+
+  public async updateBalance(xpub: string, coin: string, balance: XpubBalance) {
     return this.db
       .update({ xpub, coin }, { $set: { xpubBalance: balance } })
       .then(() => this.emit('update'));

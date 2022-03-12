@@ -7,7 +7,7 @@ import ReceiveAddressDB from './receiveAddress';
 import NotificationDB from './notification';
 import DeviceDB from './device';
 import Erc20DB from './erc20';
-
+import PassEncrypt from './passHash';
 export {
   PriceDB,
   WalletDB,
@@ -17,5 +17,6 @@ export {
   ReceiveAddressDB,
   NotificationDB,
   DeviceDB,
-  Erc20DB
+  Erc20DB,
+  PassEncrypt
 };
