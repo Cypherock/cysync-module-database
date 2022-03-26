@@ -1,0 +1,58 @@
+{
+  "name": "@cypherock/database",
+  "version": "3.0.1-beta.10",
+  "description": "cypherock database wrapper",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "start": "dist/index.js",
+    "pretty": "prettier --write 'src/**/*.ts'",
+    "pretty:check": "prettier --check 'src/**/*.ts'",
+    "lint": "tslint -p tsconfig.json -c tslint.json --fix",
+    "lint:check": "tslint -p tsconfig.json -c tslint.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cypherock",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "@types/aes-js": "^3.1.1",
+    "@types/nedb": "^1.8.12",
+    "@types/node": "^17.0.15",
+    "@types/serialport": "^8.0.2",
+    "eslint": "^8.8.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.4",
+    "prettier": "^2.5.1",
+    "rimraf": "^3.0.2",
+    "tslint": "^6.1.2",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@cypherock/communication": "3.0.1-beta.12",
+    "@cypherock/server-wrapper": "1.0.1-beta.7",
+    "@types/bignumber.js": "^5.0.0",
+    "aes-js": "^3.1.2",
+    "bignumber.js": "^9.0.2",
+    "ethereum-input-data-decoder": "^0.3.5",
+    "ethers": "^5.5.4",
+    "events": "^3.3.0",
+    "nedb": "^1.8.0",
+    "winston": "^3.6.0"
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "tslint -p tsconfig.json -c tslint.json --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
