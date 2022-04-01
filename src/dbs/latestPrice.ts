@@ -8,8 +8,8 @@ import LatestPrice from '../models/latestPrice';
  */
 class LatestPriceDB extends Service<LatestPrice> {
   /**
-   * Calls the super constructor with the database name and the base URL to fetch the price
-   * (Could be cypherock server, or any other server)
+   * Calls the super constructor with the database name and the base URL to fetch the latest price
+   * @param userDataPath - path to the user data folder
    */
   constructor(userDataPath = '') {
     super('latestCoinPrices', userDataPath, 'v1');
@@ -41,10 +41,11 @@ class LatestPriceDB extends Service<LatestPrice> {
   /**
    * Returns the price for a coin from the database.
    *
-   * @param coin - coin abbr
-   * @param days - number of days, from {7, 30, 365}
+   * @param coin - coin abbreviation
+   * 
+   * @returns the latest price for the coin   
    */
-  getPrice(coin = 'btc') {
+  getPrice(coin: LatestPrice['coin']) {
     return this.db.findOne({ coin });
   }
 }
