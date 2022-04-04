@@ -31,7 +31,7 @@ class LatestPriceDB extends Service<LatestPrice> {
         { coin: coinType },
         this.createdDBObject({
           coin: coinType,
-          price: price
+          price
         }),
         { upsert: true }
       )
@@ -42,8 +42,8 @@ class LatestPriceDB extends Service<LatestPrice> {
    * Returns the price for a coin from the database.
    *
    * @param coin - coin abbreviation
-   * 
-   * @returns the latest price for the coin   
+   *
+   * @returns the latest price for the coin
    */
   getPrice(coin: LatestPrice['coin']) {
     return this.db.findOne({ coin });
