@@ -1,4 +1,5 @@
 import PriceDB from './price';
+import LatestPriceDB from './latestPrice';
 import WalletDB from './wallet';
 import XpubDB from './xpub';
 import TransactionDB from './transactions';
@@ -10,6 +11,7 @@ import Erc20DB from './erc20';
 import PassEncrypt from './passHash';
 export {
   PriceDB,
+  LatestPriceDB,
   WalletDB,
   XpubDB,
   TransactionDB,
