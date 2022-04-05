@@ -36,10 +36,10 @@
     serialport "10.0.0"
     winston "^3.5.1"
 
-"@cypherock/server-wrapper@1.0.1-beta.7":
-  version "1.0.1-beta.7"
-  resolved "https://registry.yarnpkg.com/@cypherock/server-wrapper/-/server-wrapper-1.0.1-beta.7.tgz#6b2a862e1d5c95e8683e515cf002e37eaf6357bb"
-  integrity sha512-JskYNJp7SNkjG68hAFE8Huk25mDOcTpSFZGIUQyfan2gjzfQd6iUyokEH78m0QAe+Hi6o65f7SwtVmuMkkR0dw==
+"@cypherock/server-wrapper@1.0.1-beta.8":
+  version "1.0.1-beta.8"
+  resolved "https://registry.yarnpkg.com/@cypherock/server-wrapper/-/server-wrapper-1.0.1-beta.8.tgz#f60027f408037d4002303111157923dfcaa9264e"
+  integrity sha512-YybL1FL6reM7lqkLAgBl/SN7wfuxzXkGEZB0n3To2jeTgDXOuYyY35nWOh4hKAh4NUBj+UPWxg/onvceOEfICw==
   dependencies:
     axios "^0.25.0"
     node-cache "^5.1.2"
