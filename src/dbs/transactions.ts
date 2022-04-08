@@ -293,7 +293,7 @@ export default class TransactionDB extends Service<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map((elem: { address: any; }) => elem.address)
+          addressFromDB.map((elem: { address: any }) => elem.address)
         );
       }
 
@@ -549,7 +549,7 @@ export default class TransactionDB extends Service<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map((elem: { address: any; }) => elem.address)
+          addressFromDB.map((elem: { address: any }) => elem.address)
         );
       }
 
