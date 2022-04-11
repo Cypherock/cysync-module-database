@@ -28,10 +28,10 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
-"@cypherock/communication@3.0.1-beta.12":
-  version "3.0.1-beta.12"
-  resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.12.tgz#88cd0117eed3f8404128316654664d3ba56ff19c"
-  integrity sha512-TDdPddYKpBw0YwB3I1lDeT7y+mAVYWVA0iCOlMpL2eDjxhN1ta5ULpHgosRH7x3pANPLm3rIku0aRP0G0eeWCA==
+"@cypherock/communication@3.0.1-beta.14":
+  version "3.0.1-beta.14"
+  resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.14.tgz#22247c9ac4fd6d82130acf9b3bcbf5b9fa44dcdd"
+  integrity sha512-Iv8Ol1fSd2aN8W+xIHFs9NkB1JOXHgBShZOJTT6cwrl/H2czJPf6dGX9Q5SoM/9zRDf9aE69TJN3hkzp3L5MDw==
   dependencies:
     serialport "10.0.0"
     winston "^3.5.1"

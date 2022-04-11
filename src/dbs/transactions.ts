@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import Service from '../module/database';
 import Transaction, { InputOutput, SentReceive } from '../models/transaction';
-import AddressDB from './address';
 import logger from '../utils/logger';
 
 const isBtcFork = (coinStr: string) => {
@@ -253,7 +252,7 @@ export default class TransactionDB extends Service<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-    addressDB: AddressDB;
+    addressDbUtil: any;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -264,7 +263,7 @@ export default class TransactionDB extends Service<Transaction> {
       walletId,
       walletName,
       coinType,
-      addressDB,
+      addressDbUtil,
       status
     } = transaction;
 
@@ -290,11 +289,11 @@ export default class TransactionDB extends Service<Transaction> {
       // Get all addresses of that xpub and coin
       // This is because the address from the API is of only 1 wallet,
       // Whereas there are 2 (or 4 in case od BTC & BTCT) wallets.
-      const addressFromDB = await addressDB.getAll({ xpub, coinType });
+      const addressFromDB = await addressDbUtil('getAll', { xpub, coinType });
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map(elem => elem.address)
+          addressFromDB.map((elem: { address: any }) => elem.address)
         );
       }
 
@@ -509,7 +508,7 @@ export default class TransactionDB extends Service<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-    addressDB: AddressDB;
+    addressDbUtil: any;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -520,7 +519,7 @@ export default class TransactionDB extends Service<Transaction> {
       walletId,
       walletName,
       coinType,
-      addressDB,
+      addressDbUtil,
       status
     } = transaction;
 
@@ -546,11 +545,11 @@ export default class TransactionDB extends Service<Transaction> {
       // Get all addresses of that xpub and coin
       // This is because the address from the API is of only 1 wallet,
       // Whereas there are 2 (or 4 in case od BTC & BTCT) wallets.
-      const addressFromDB = await addressDB.getAll({ xpub, coinType });
+      const addressFromDB = await addressDbUtil('getAll', { xpub, coinType });
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map(elem => elem.address)
+          addressFromDB.map((elem: { address: any }) => elem.address)
         );
       }
 
