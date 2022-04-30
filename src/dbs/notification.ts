@@ -61,7 +61,7 @@ export default class NotificationDB extends Service<Notification> {
 
     // Fetch from server if data is not syncronized.
     if (!isInDb) {
-      const res = await NotificationServer.get(last.dbId, items);
+      const res = await NotificationServer.get(last.dbId, items).request();
       let serverLatestNotif = [];
       let hasNext: boolean = false;
 
@@ -126,7 +126,7 @@ export default class NotificationDB extends Service<Notification> {
       .limit(items)
       .exec();
 
-    const res = await NotificationServer.get(undefined, items);
+    const res = await NotificationServer.get(undefined, items).request();
     let serverLatestNotif = [];
     let hasNext = false;
     let hasUnread = false;
