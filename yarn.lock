@@ -28,12 +28,13 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
-"@cypherock/communication@3.0.1-beta.14":
-  version "3.0.1-beta.14"
-  resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.14.tgz#22247c9ac4fd6d82130acf9b3bcbf5b9fa44dcdd"
-  integrity sha512-Iv8Ol1fSd2aN8W+xIHFs9NkB1JOXHgBShZOJTT6cwrl/H2czJPf6dGX9Q5SoM/9zRDf9aE69TJN3hkzp3L5MDw==
+"@cypherock/communication@3.0.1-beta.15":
+  version "3.0.1-beta.15"
+  resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.15.tgz#6106b10cd029492f74f3afe36cf645bf26f48ee7"
+  integrity sha512-K+TVIGick2PmnKI7ARVe5dUB3kQRkezgsbn1+y30JVqQYyeaSVR+bZCkQnuGBPcejvchqYM7Cni+GQN6s0qt9g==
   dependencies:
     serialport "10.0.0"
+    uuid "^8.3.2"
     winston "^3.5.1"
 
 "@cypherock/server-wrapper@1.0.1-beta.8":
@@ -2960,6 +2961,11 @@ uuid@2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.1.tgz#c2a30dedb3e535d72ccf82e343941a50ba8533ac"
   integrity sha1-wqMN7bPlNdcsz4LjQ5QaULqFM6w=
+
+uuid@^8.3.2:
+  version "8.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"
