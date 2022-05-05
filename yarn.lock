@@ -37,10 +37,10 @@
     uuid "^8.3.2"
     winston "^3.5.1"
 
-"@cypherock/server-wrapper@1.0.1-beta.8":
-  version "1.0.1-beta.8"
-  resolved "https://registry.yarnpkg.com/@cypherock/server-wrapper/-/server-wrapper-1.0.1-beta.8.tgz#f60027f408037d4002303111157923dfcaa9264e"
-  integrity sha512-YybL1FL6reM7lqkLAgBl/SN7wfuxzXkGEZB0n3To2jeTgDXOuYyY35nWOh4hKAh4NUBj+UPWxg/onvceOEfICw==
+"@cypherock/server-wrapper@1.0.1-beta.9":
+  version "1.0.1-beta.9"
+  resolved "https://registry.yarnpkg.com/@cypherock/server-wrapper/-/server-wrapper-1.0.1-beta.9.tgz#f0cf345ee3b7ce4fe2637281070c05df06e54768"
+  integrity sha512-Eih8Qx2wgQzq4389+ip5tp/33tkgh9jDDBs9iri7vmSgldIVT0RGkqOqspPlIpNUXgpvS5NOCcHjniwQaIzUiw==
   dependencies:
     axios "^0.25.0"
     node-cache "^5.1.2"
