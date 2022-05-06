@@ -1,12 +1,13 @@
-import openDatabase from 'websql';
+import { EventEmitter } from 'events';
 
 export abstract class Db<T> {
     public table: string;
     protected db: Database;
+    public emitter = new EventEmitter();
 
     constructor(table: string) {
         this.table = table;
-        this.db = openDatabase('Cypherock', '1.0', `Database storage for Cypherock`, 5 * 1024 * 1024);
+        this.db = window.openDatabase('Cypherock', '1.0', `Database storage for Cypherock`, 5 * 1024 * 1024);
     }
 
     public executeSql(sql: string, params?: any[]): Promise<any> {
@@ -26,7 +27,8 @@ export abstract class Db<T> {
         const keys = Object.keys(doc);
         const values = keys.map(k => (doc as any)[k]);
         const sql = `INSERT INTO ${this.table} (${keys.join(',')}) VALUES (${keys.map(() => '?').join(',')})`;
-        await this.executeSql(sql, values);
+        await this.executeSql(sql, values).then(() => this.emit('insert'));
+        ;
     }
 
     public async get(id: string): Promise<T | null> {
@@ -48,6 +50,22 @@ export abstract class Db<T> {
 
     public async delete(id: any): Promise<void> {
         await this.executeSql(`DELETE FROM ${this.table} WHERE id = ?`, [id]);
+    }
+
+    public async update(id: string, doc: T): Promise<void> {
+        const keys = Object.keys(doc);
+        const values = keys.map(k => (doc as any)[k]);
+        const sql = `UPDATE ${this.table} SET ${keys.map(k => `${k} = ?`).join(',')} WHERE id = ?`;
+        await this.executeSql(sql, [...values, id]);
+    }
+
+    /**
+     * emits an event
+     * @param event - the event to emit.
+     * @param payload - the payload to emit. can be anything, boolean, object, string
+     */
+    public emit(event: string, payload?: any) {
+        this.emitter.emit(event, payload);
     }
 
 }
