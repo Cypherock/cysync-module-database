@@ -5,13 +5,13 @@ export class WalletDb extends Db<Wallet> {
     constructor() {
         super('wallet');
         this.executeSql(`
-            CREATE TABLE IF NOT EXISTS ${this.table} (
+        CREATE TABLE IF NOT EXISTS ${this.table} (
             id TEXT NOT NULL,
-            deviceId int NOT NULL,
+            device TEXT NOT NULL,
             name text NOT NULL,
             passphraseSet boolean NOT NULL,
             passwordSet boolean NOT NULL,
-            PRIMARY KEY (id, deviceId)
+            PRIMARY KEY (id, device)
         )`);
     }
 }

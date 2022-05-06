@@ -1,6 +1,6 @@
 export default interface IWallet {
     id: string;
-    deviceId: number;
+    device: string;
     name: string;
     passwordSet: boolean;
     passphraseSet: boolean;
