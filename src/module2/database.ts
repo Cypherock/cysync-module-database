@@ -63,14 +63,14 @@ export abstract class Db<T> {
         const keys = Object.keys(query);
         const values = keys.map(k => (query as any)[k]);
         const sql = `DELETE FROM ${this.table} WHERE ${keys.map(k => `${k} = ?`).join(' AND ')}`;
-        await this.executeSql(sql, values);
+        await this.executeSql(sql, values).then(() => this.emit('delete'));;
     }
 
     public async update(id: string, doc: T): Promise<void> {
         const keys = Object.keys(doc);
         const values = keys.map(k => (doc as any)[k]);
         const sql = `UPDATE ${this.table} SET ${keys.map(k => `${k} = ?`).join(',')} WHERE id = ?`;
-        await this.executeSql(sql, [...values, id]);
+        await this.executeSql(sql, [...values, id]).then(() => this.emit('update'));;
     }
 
     /**
