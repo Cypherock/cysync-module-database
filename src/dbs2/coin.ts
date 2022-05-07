@@ -21,4 +21,17 @@ export class CoinDb extends Db<Coin> {
             PRIMARY KEY (walletId, slug)
         )`);
     }
+
+    public async updateXpubBalance(xpub: string, slug: string, xpubBalance: string, xpubUnconfirmedBalance: string): Promise<void> {
+        await this.executeSql(`UPDATE ${this.table} SET xpubBalance = ?, xpubUnconfirmedBalance = ? WHERE xpub = ? and slug = ?`, [xpubBalance, xpubUnconfirmedBalance, xpub, slug]);
+        this.emit('update');
+    }
+    public async updateZpubBalance(zpub: string, slug: string, zpubBalance: string, zpubUnconfirmedBalance: string): Promise<void> {
+        await this.executeSql(`UPDATE ${this.table} SET zpubBalance = ?, zpubUnconfirmedBalance = ? WHERE zpub = ? and slug = ?`, [zpubBalance, zpubUnconfirmedBalance, zpub, slug]);
+        this.emit('update');
+    }
+    public async updateTotalBalance(walletId: string, slug: string, totalBalance: string, totalUnconfirmedBalance: string): Promise<void> {
+        await this.executeSql(`UPDATE ${this.table} SET totalBalance = ?, totalUnconfirmedBalance = ? WHERE walletId = ? and slug = ?`, [totalBalance, totalUnconfirmedBalance, walletId, slug]);
+        this.emit('update');
+    }
 }

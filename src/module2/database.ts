@@ -66,7 +66,7 @@ export abstract class Db<T> {
         await this.executeSql(sql, values).then(() => this.emit('delete'));;
     }
 
-    public async update(id: string, doc: T): Promise<void> {
+    public async update(id: string, doc: Partial<T>): Promise<void> {
         const keys = Object.keys(doc);
         const values = keys.map(k => (doc as any)[k]);
         const sql = `UPDATE ${this.table} SET ${keys.map(k => `${k} = ?`).join(',')} WHERE id = ?`;
