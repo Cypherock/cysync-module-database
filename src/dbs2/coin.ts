@@ -4,7 +4,7 @@ import Coin from '../models2/coin';
 export class CoinDb extends Db<Coin> {
 
     constructor() {
-        super('device');
+        super('coin');
         this.executeSql(`CREATE TABLE IF NOT EXISTS ${this.table} (
             walletId TEXT NOT NULL,
             networkId INTEGER,

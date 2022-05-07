@@ -25,7 +25,15 @@ export abstract class Db<T> {
 
     public async insert(doc: T): Promise<void> {
         const keys = Object.keys(doc);
-        const values = keys.map(k => (doc as any)[k]);
+        const values = keys.map(k => {
+            if (typeof (doc as any)[k] === 'boolean') {
+                return (doc as any)[k] ? 1 : 0;
+            } else if (typeof (doc as any)[k] === 'number') {
+                return (doc as any)[k] as number;
+            } else {
+                return (doc as any)[k] as string;
+            }
+        });
         const sql = `INSERT INTO ${this.table} (${keys.join(',')}) VALUES (${keys.map(() => '?').join(',')})`;
         await this.executeSql(sql, values).then(() => this.emit('insert'));
         ;
