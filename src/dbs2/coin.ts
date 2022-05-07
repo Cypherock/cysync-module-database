@@ -7,7 +7,7 @@ export class CoinDb extends Db<Coin> {
         super('device');
         this.executeSql(`CREATE TABLE IF NOT EXISTS ${this.table} (
             walletId TEXT NOT NULL,
-            networkId INTEGER NOT NULL,
+            networkId INTEGER,
             slug TEXT NOT NULL,
             price TEXT NOT NULL,
             xpub TEXT NOT NULL,
@@ -18,7 +18,7 @@ export class CoinDb extends Db<Coin> {
             zpubUnconfirmedBalance TEXT,
             totalBalance TEXT NOT NULL,
             totalUnconfirmedBalance TEXT NOT NULL,
-            PRIMARY KEY (walletId, networkId, slug)
+            PRIMARY KEY (walletId, slug)
         )`);
     }
 }

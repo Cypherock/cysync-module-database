@@ -1,4 +1,4 @@
-export default interface IXpub {
+export default interface Coin {
     walletId: string;
     networkId: number;
     slug: string;
