@@ -31,14 +31,6 @@ export abstract class Db<T> {
         ;
     }
 
-    public async get(id: string): Promise<T | null> {
-        const rows = await this.executeSql(`SELECT * FROM ${this.table} WHERE id = ?`, [id]);
-        if (rows.length === 0) {
-            return null;
-        }
-        return rows.item(0);
-    }
-
     public async getOne(query: Partial<T>): Promise<T | null> {
         const keys = Object.keys(query);
         const values = keys.map(k => (query as any)[k]);
@@ -67,8 +59,11 @@ export abstract class Db<T> {
         return result;
     }
 
-    public async delete(id: any): Promise<void> {
-        await this.executeSql(`DELETE FROM ${this.table} WHERE id = ?`, [id]);
+    public async delete(query: Partial<T>): Promise<void> {
+        const keys = Object.keys(query);
+        const values = keys.map(k => (query as any)[k]);
+        const sql = `DELETE FROM ${this.table} WHERE ${keys.map(k => `${k} = ?`).join(' AND ')}`;
+        await this.executeSql(sql, values);
     }
 
     public async update(id: string, doc: T): Promise<void> {

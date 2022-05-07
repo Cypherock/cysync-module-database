@@ -13,15 +13,4 @@ export class DeviceDb extends Db<Device> {
         )`);
     }
 
-    public async get(serial: string) : Promise<Device | null> {
-        const rows = await this.executeSql(`SELECT * FROM ${this.table} WHERE serial = ?`, [serial]);
-        if (rows.length === 0) {
-            return null;
-        }
-        return rows.item(0);
-    }
-
-    public async delete(serial: string) {
-        await this.executeSql(`DELETE FROM ${this.table} WHERE serial = ?`, [serial]);
-    }
 }
