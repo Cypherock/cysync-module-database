@@ -1,8 +1,8 @@
 export default interface Token {
-    walletId: string;
-    networkId: number;
-    slug: string;
-    price: string;
-    balance: string;
-  }
-  
+  walletId: string;
+  networkId: number;
+  coin: string;
+  slug: string;
+  price: string;
+  balance: string;
+}
