@@ -39,8 +39,27 @@ export abstract class Db<T> {
         return rows.item(0);
     }
 
-    public async getAll(): Promise<T[]> {
-        const rows = await this.executeSql(`SELECT * FROM ${this.table}`);
+    public async getOne(query: Partial<T>): Promise<T | null> {
+        const keys = Object.keys(query);
+        const values = keys.map(k => (query as any)[k]);
+        const sql = `SELECT * FROM ${this.table} WHERE ${keys.map(k => `${k} = ?`).join(' AND ')}`;
+        const rows = await this.executeSql(sql, values);
+        if (rows.length === 0) {
+            return null;
+        }
+        return rows.item(0);
+    }
+
+    public async getAll(query?: Partial<T>): Promise<T[]> {
+        let rows;
+        if (!query) {
+            rows = await this.executeSql(`SELECT * FROM ${this.table}`);
+        } else {
+            const keys = Object.keys(query);
+            const values = keys.map(k => (query as any)[k]);
+            const sql = `SELECT * FROM ${this.table} WHERE ${keys.map(k => `${k} = ?`).join(' AND ')}`;
+            rows = await this.executeSql(sql, values);
+        }
         const result: T[] = [];
         for (let i = 0; i < rows.length; i++) {
             result.push(rows.item(i));
