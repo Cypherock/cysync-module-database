@@ -1,4 +1,4 @@
-export enum BIPType {
+enum BIPType {
   BIP32 = 0,
   BIP44 = 1
 }
