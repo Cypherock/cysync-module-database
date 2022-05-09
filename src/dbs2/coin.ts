@@ -30,8 +30,8 @@ export class CoinDb extends Db<Coin> {
         await this.executeSql(`UPDATE ${this.table} SET zpubBalance = ?, zpubUnconfirmedBalance = ? WHERE zpub = ? and slug = ?`, [zpubBalance, zpubUnconfirmedBalance, zpub, slug]);
         this.emit('update');
     }
-    public async updateTotalBalance(walletId: string, slug: string, totalBalance: string, totalUnconfirmedBalance: string): Promise<void> {
-        await this.executeSql(`UPDATE ${this.table} SET totalBalance = ?, totalUnconfirmedBalance = ? WHERE walletId = ? and slug = ?`, [totalBalance, totalUnconfirmedBalance, walletId, slug]);
+    public async updateTotalBalance(xpub: string, slug: string, totalBalance: string, totalUnconfirmedBalance: string): Promise<void> {
+        await this.executeSql(`UPDATE ${this.table} SET totalBalance = ?, totalUnconfirmedBalance = ? WHERE xpub = ? and slug = ?`, [totalBalance, totalUnconfirmedBalance, xpub, slug]);
         this.emit('update');
     }
 }

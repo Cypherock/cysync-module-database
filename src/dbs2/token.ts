@@ -15,10 +15,10 @@ export class TokenDb extends Db<Token> {
         )`);
   }
 
-  public async updateBalance(walletId: string, coin: string, balance: string) {
+  public async updateBalance(walletId: string, token: string, balance: string) {
     await this.executeSql(
-      `UPDATE ${this.table} SET balance = ? WHERE walletId = ? AND coin = ?`,
-      [balance, walletId, coin]
+      `UPDATE ${this.table} SET balance = ? WHERE walletId = ? AND slug = ?`,
+      [balance, walletId, token]
     );
     this.emit('update');
   }
