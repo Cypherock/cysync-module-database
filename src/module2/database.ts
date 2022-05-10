@@ -1,13 +1,16 @@
 import { EventEmitter } from 'events';
+import { PassEncrypt } from '../dbs';
 import logger from '../utils/logger';
 
 export abstract class Db<T> {
   public table: string;
   protected db: Database;
   public emitter = new EventEmitter();
+  protected refEnDb: PassEncrypt | undefined;
 
-  constructor(table: string) {
+  constructor(table: string, enDb?: PassEncrypt) {
     this.table = table;
+    this.refEnDb = enDb;
     this.db = window.openDatabase(
       'Cypherock',
       '1.0',
@@ -52,6 +55,29 @@ export abstract class Db<T> {
       .map(() => '?')
       .join(',')})`;
     await this.executeSql(sql, values).then(() => this.emit('insert'));
+  }
+
+  public async insertMany(docs: T[]): Promise<void> {
+    const keys = Object.keys(docs[0]);
+    const sql = `INSERT INTO ${this.table} (${keys.join(',')}) VALUES (${docs
+      .map(() => keys.map(() => '?').join(','))
+      .join(') , (')})`;
+    const values = docs.map(doc => {
+      const values = keys.map(k => {
+        if (typeof (doc as any)[k] === 'boolean') {
+          return (doc as any)[k] ? 1 : 0;
+        } else if (typeof (doc as any)[k] === 'number') {
+          return (doc as any)[k] as number;
+        } else if ((doc as any)[k] instanceof Date) {
+          return (doc as any)[k].getTime();
+        } else {
+          return (doc as any)[k] as string;
+        }
+      });
+      return values;
+    });
+    const flattenedValues = values.reduce((acc, curr) => [...acc, ...curr], []);
+    await this.executeSql(sql, flattenedValues).then(() => this.emit('insert'));
   }
 
   public async getOne(query: Partial<T>): Promise<T | null> {
