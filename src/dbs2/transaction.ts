@@ -21,7 +21,7 @@ const isBtcFork = (coinStr: string) => {
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 24;
 
-interface TxQueryOptions extends Partial<Transaction> {
+export interface TxQueryOptions extends Partial<Transaction> {
   excludeFees?: boolean;
   sinceDate?: Date;
   excludeFailed?: boolean;
@@ -43,14 +43,14 @@ export class TransactionDb extends Db<Transaction> {
             amount TEXT NOT NULL,
             confirmations INTEGER NOT NULL,
             walletId TEXT NOT NULL,
-            walletName TEXT NOT NULL,
+            walletName TEXT,
             slug TEXT NOT NULL,
             coin TEXT,
             status INTEGER NOT NULL,
             sentReceive TEXT NOT NULL,
             confirmed DATETIME NOT NULL,
             blockHeight INTEGER NOT NULL,
-            PRIMARY KEY (hash, walletId, slug, sentReceive)
+            PRIMARY KEY (hash, walletId, slug, sentReceive, walletName)
         )`);
   }
 
@@ -115,7 +115,7 @@ export class TransactionDb extends Db<Transaction> {
     let andQueryValues = [];
     if (query.excludeFees) {
       delete query.excludeFees;
-      andQuery += ' AND sentReceive = "FEES"';
+      andQuery += ' AND sentReceive <> "FEES"';
     }
     if (query.excludeFailed) {
       delete query.excludeFailed;
@@ -123,21 +123,21 @@ export class TransactionDb extends Db<Transaction> {
     }
 
     if (query.excludePending) {
-      delete query.excludePending;
       andQuery += ' AND status <> 0';
     }
+    delete query.excludePending;
 
     if (query.sinceDate) {
       andQueryValues.push(query.sinceDate.getTime());
-      delete query.sinceDate;
       andQuery += ' AND confirmed >= ?';
     }
+    delete query.sinceDate;
 
     if (query.minConfirmations) {
       andQueryValues.push(query.minConfirmations);
-      delete query.minConfirmations;
       andQuery += ' AND confirmations >= ?';
     }
+    delete query.minConfirmations;
 
     if (query.statusMessage) {
       const statusCode =
@@ -147,27 +147,28 @@ export class TransactionDb extends Db<Transaction> {
           ? 1
           : 2;
       andQueryValues.push(statusCode);
-      delete query.statusMessage;
       andQuery += ' AND status = ?';
     }
+    delete query.statusMessage;
     let txns;
 
     if (andQuery.length > 0) {
-      console.log(query, sorting, andQuery, andQueryValues);
       txns = await super.getAll(query, sorting, andQuery, andQueryValues);
     } else {
       txns = await super.getAll(query, sorting);
     }
-    txns.map(async txn => {
-      txn.inputs = await this.inputOutput.getAll({
-        hash: txn.hash,
-        type: IOtype.INPUT
-      });
-      txn.outputs = await this.inputOutput.getAll({
-        hash: txn.hash,
-        type: IOtype.OUTPUT
-      });
-    });
+    await Promise.all(
+      txns.map(async txn => {
+        txn.inputs = await this.inputOutput.getAll({
+          hash: txn.hash,
+          type: IOtype.INPUT
+        });
+        txn.outputs = await this.inputOutput.getAll({
+          hash: txn.hash,
+          type: IOtype.OUTPUT
+        });
+      })
+    );
     return txns;
   }
 
@@ -711,7 +712,7 @@ export class TransactionDb extends Db<Transaction> {
     const expireTime =
       new Date().getTime() - PENDING_TO_FAIL_TIMEOUT_IN_HOURS * 60 * 60 * 1000;
     await this.executeSql(
-      'UPDATE transactions SET status = 2 WHERE status = 1 AND confirmed < ?',
+      'UPDATE transactions SET status = 0 WHERE status = 1 AND confirmed < ?',
       [expireTime]
     );
   }

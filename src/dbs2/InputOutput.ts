@@ -22,7 +22,6 @@ export class InputOutputDb extends Db<InputOutput> {
     if (existingIO) {
       await this.update(doc, { hash: doc.hash, indexNumber: doc.indexNumber, type: doc.type });
     } else {
-      console.log('inserting', doc);
       await super.insert(doc);
     }
   }

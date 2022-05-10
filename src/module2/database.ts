@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import logger from '../utils/logger';
 
 export abstract class Db<T> {
   public table: string;
@@ -25,7 +26,7 @@ export abstract class Db<T> {
             resolve(r.rows);
           },
           (_, e) => {
-            console.log('error', sql, params, e);
+            logger.error(sql, params, e);
             reject(e);
             return false;
           }
@@ -41,6 +42,8 @@ export abstract class Db<T> {
         return (doc as any)[k] ? 1 : 0;
       } else if (typeof (doc as any)[k] === 'number') {
         return (doc as any)[k] as number;
+      } else if ((doc as any)[k] instanceof Date) {
+        return (doc as any)[k].getTime();
       } else {
         return (doc as any)[k] as string;
       }
@@ -84,6 +87,7 @@ export abstract class Db<T> {
         .map(k => `${k} = ?`)
         .join(' AND ')}`;
 
+      if (keys.length === 0) sql += '1=1';
       if (andQuery && andQueryValues) {
         sql += ` ${andQuery}`;
         values = [...values, ...andQueryValues];
