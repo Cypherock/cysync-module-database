@@ -5,6 +5,7 @@ import { CoinDb } from './coin';
 import { SendAddressDb } from './sendAddress';
 import { ReceiveAddressDb } from './receiveAddress';
 import { TransactionDb } from './transaction';
+import { NotificationDb } from './notification';
 import PassEncrypt from './passHash';
 
 export {
@@ -15,5 +16,6 @@ export {
   SendAddressDb,
   ReceiveAddressDb as ReceiveAddressDb2,
   TransactionDb as TransactionDb2,
-  PassEncrypt
+  PassEncrypt,
+  NotificationDb as NotificationDb2
 };

@@ -1,6 +1,6 @@
 import { Db } from '../module2/database';
 import Coin from '../models2/coin';
-import { PassEncrypt } from '../dbs';
+import { PassEncrypt } from '../dbs2';
 
 export class CoinDb extends Db<Coin> {
   constructor(enDb?: PassEncrypt) {

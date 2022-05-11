@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { PassEncrypt } from '../dbs';
+import { PassEncrypt } from '../dbs2';
 import logger from '../utils/logger';
 
 export abstract class Db<T> {
@@ -77,6 +77,7 @@ export abstract class Db<T> {
       return values;
     });
     const flattenedValues = values.reduce((acc, curr) => [...acc, ...curr], []);
+    console.log('many', sql, flattenedValues);
     await this.executeSql(sql, flattenedValues).then(() => this.emit('insert'));
   }
 
