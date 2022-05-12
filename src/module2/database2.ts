@@ -9,7 +9,7 @@ PouchDB.plugin(PouchFind);
 
 export abstract class Db<T> {
   public table: string;
-  public db: PouchDB.Database<T>;
+  protected db: PouchDB.Database<T>;
   public emitter = new EventEmitter();
   protected refEnDb: PassEncrypt | undefined;
 

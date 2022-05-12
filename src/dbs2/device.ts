@@ -1,30 +1,20 @@
-import { Db } from '../module2/database';
+import { Db } from '../module2/database2';
 import Device from '../models2/device';
 
 export class DeviceDb extends Db<Device> {
   constructor() {
     super('device');
-    this.executeSql(`CREATE TABLE IF NOT EXISTS ${this.table} (
-            serial TEXT NOT NULL,
-            version TEXT NOT NULL,
-            isAuth BOOLEAN NOT NULL,
-            PRIMARY KEY (serial)
-        )`);
   }
 
-  public transform(d: Device): Device {
-    d.isAuth = d.isAuth === true;
-    return d;
+  public async insert(device: Device) {
+    await this.db.post(device);
   }
 
-  public async getOne(query: Partial<Device>): Promise<Device | null> {
-    const device = await super.getOne(query);
-    if (device) return this.transform(device);
-    return null;
-  }
-
-  public async getAll(query?: Partial<Device>): Promise<Device[]> {
-    const devices = await super.getAll(query);
-    return devices.map(d => this.transform(d));
+  public async getBySerial(serial: string) {
+    const res = await this.db.find({ selector: { serial } });
+    if (res.docs.length === 0) {
+      return null;
+    }
+    return res.docs[0];
   }
 }
