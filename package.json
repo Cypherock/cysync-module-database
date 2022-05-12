@@ -34,6 +34,9 @@
     "@cypherock/communication": "3.0.1-beta.16",
     "@cypherock/server-wrapper": "1.0.1-beta.11",
     "@types/bignumber.js": "^5.0.0",
+    "@types/pouchdb": "^6.4.0",
+    "@types/pouchdb-adapter-websql": "^6.1.4",
+    "@types/pouchdb-find": "^6.3.7",
     "@types/websql": "^0.0.27",
     "aes-js": "^3.1.2",
     "bignumber.js": "^9.0.2",
@@ -41,6 +44,9 @@
     "ethers": "^5.5.4",
     "events": "^3.3.0",
     "nedb": "^1.8.0",
+    "pouchdb": "^7.3.0",
+    "pouchdb-adapter-websql": "^7.0.0",
+    "pouchdb-find": "^7.3.0",
     "winston": "^3.6.0"
   },
   "files": [
