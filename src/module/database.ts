@@ -33,6 +33,7 @@ export default abstract class Database<T> {
         filename: `${userDataPath}/databases/${database}.db`,
         timestampData: true,
         autoload: !this.refEnDb,
+    
         beforeDeserialization: this.refEnDb
           ? (input: string) => {
               if (this.refEnDb) {

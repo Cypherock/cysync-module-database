@@ -7,6 +7,7 @@ import { ReceiveAddressDb } from './receiveAddress';
 import { TransactionDb } from './transaction';
 import { NotificationDb } from './notification';
 import PassEncrypt from './passHash';
+import PriceHistoryDb from './priceHistory';
 
 export {
   WalletDb as WalletDb2,
@@ -17,5 +18,6 @@ export {
   ReceiveAddressDb as ReceiveAddressDb2,
   TransactionDb as TransactionDb2,
   PassEncrypt,
-  NotificationDb as NotificationDb2
+  NotificationDb as NotificationDb2,
+  PriceHistoryDb
 };
