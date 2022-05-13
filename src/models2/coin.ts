@@ -1,9 +1,6 @@
 import IModel from "./model";
 
-enum ISENCRYPTED {
-  NO = 0,
-  YES = 1
-}
+
 
 export default interface Coin extends IModel {
   walletId: string;
@@ -18,5 +15,4 @@ export default interface Coin extends IModel {
   zpubUnconfirmedBalance?: string;
   totalBalance: string;
   totalUnconfirmedBalance: string;
-  isEncrypted?: ISENCRYPTED;
 }

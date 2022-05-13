@@ -6,7 +6,7 @@ export default class PassEncrypt {
   private idHash: string = '';
   private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
     new aesjs.ModeOfOperation.ctr(this.passHash);
-  private passSet: boolean = false;
+  public passSet: boolean = false;
 
   constructor(idIn: string) {
     if (idIn === undefined) {
