@@ -1,4 +1,6 @@
-export default interface Token {
+import IModel from "./model";
+
+export default interface Token extends IModel {
   walletId: string;
   networkId: number;
   coin: string;
