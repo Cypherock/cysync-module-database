@@ -1,9 +1,11 @@
+import IModel from "./model";
+
 enum ISENCRYPTED {
   NO = 0,
   YES = 1
 }
 
-export default interface Coin {
+export default interface Coin extends IModel {
   walletId: string;
   networkId: number;
   slug: string;

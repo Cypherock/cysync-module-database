@@ -29,6 +29,7 @@ export abstract class Db<T> {
   }
 
   public async insert(doc: T) {
+    console.log('insert', doc);
     await this.db.put(doc);
     this.emit('insert');
   }
@@ -46,19 +47,49 @@ export abstract class Db<T> {
     return res.docs[0];
   }
 
-  public async getAll() {
+  public async getOne(query: Partial<T>) {
+    const res = await this.db.find({ selector: query });
+    if (res.docs.length === 0) {
+      return null;
+    }
+    return res.docs[0];
+  }
+
+  public async getAll(query?: Partial<T>) {
+    if (query) {
+      return (await this.db.find({ selector: query })).docs;
+    }
     return (await this.db.allDocs({ include_docs: true })).rows.map(
       row => row.doc
     );
   }
 
-  // public async findOneAndUpdate() {
-
-  // }
+  public async findAndUpdate(query: Partial<T>, doc: Partial<T>) {
+    const res = await this.db.find({ selector: query });
+    const docs = [...res.docs];
+    console.log('findAndUpdate', docs, doc);
+    const updatedDocs = docs.map(each => {
+      return {
+        ...each,
+        ...doc,
+      }
+    })
+    await this.db.bulkDocs(updatedDocs);
+    this.emit('update');
+  }
 
   public async update(doc: T & PouchDB.Core.IdMeta & PouchDB.Core.GetMeta) {
     await this.db.put(doc);
     this.emit('update');
+  }
+
+  public async delete(query: Partial<T>) {
+    const res = await this.db.find({ selector: query });
+    const docs = res.docs;
+    for (const doc of docs) {
+      await this.db.remove(doc);
+    }
+    this.emit('delete');
   }
 
   public async deleteById(id: string) {

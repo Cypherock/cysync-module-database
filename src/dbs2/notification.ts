@@ -6,7 +6,7 @@ export class NotificationDb extends Db<Notification> {
     super('notification');
   }
 
-  public async getAll(perPageLimit = 3) {
+  public async get(perPageLimit = 3) {
     const res = await this.db.find({
       selector: {
         _id: { $gte: null }
