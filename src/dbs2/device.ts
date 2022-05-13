@@ -6,9 +6,7 @@ export class DeviceDb extends Db<Device> {
     super('device');
   }
 
-  public async insert(device: Device) {
-    await this.db.post(device);
-  }
+
 
   public async getBySerial(serial: string) {
     const res = await this.db.find({ selector: { serial } });

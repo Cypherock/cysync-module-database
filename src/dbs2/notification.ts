@@ -6,10 +6,6 @@ export class NotificationDb extends Db<Notification> {
     super('notification');
   }
 
-  public async insertMany(notifications: Notification[]) {
-    await this.db.bulkDocs(notifications);
-  }
-
   public async getAll(perPageLimit = 3) {
     const res = await this.db.find({
       selector: {
