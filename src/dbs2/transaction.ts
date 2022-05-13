@@ -1,10 +1,8 @@
-import { Db } from '../module2/database';
-import Transaction, { SentReceive } from '../models2/transaction';
+import { Db } from '../module2/database2';
+import Transaction, { SentReceive, Status } from '../models2/transaction';
 import BigNumber from 'bignumber.js';
-import { InputOutputDb } from '../dbs2/inputOutput';
 import { InputOutput, IOtype } from '../models2/inputOutput';
 import { SendAddressDb } from './sendAddress';
-import { Status } from '../models';
 import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
 import { utils } from 'ethers';
 import logger from '../utils/logger';
@@ -21,155 +19,141 @@ const isBtcFork = (coinStr: string) => {
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 24;
 
-export interface TxQueryOptions extends Partial<Transaction> {
+export interface TxQueryOptions extends Partial<Omit<Transaction, 'status'>> {
   excludeFees?: boolean;
   sinceDate?: Date;
   excludeFailed?: boolean;
   excludePending?: boolean;
   minConfirmations?: number;
   statusMessage?: string;
+  status?: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
 
 export class TransactionDb extends Db<Transaction> {
-  inputOutput: InputOutputDb;
   public counter = 0;
   constructor() {
     super('transactions');
-    this.inputOutput = new InputOutputDb();
-    this.executeSql(`CREATE TABLE IF NOT EXISTS ${this.table} (
-            hash TEXT NOT NULL,
-            total TEXT,
-            fees TEXT,
-            amount TEXT NOT NULL,
-            confirmations INTEGER NOT NULL,
-            walletId TEXT NOT NULL,
-            walletName TEXT,
-            slug TEXT NOT NULL,
-            coin TEXT,
-            status INTEGER NOT NULL,
-            sentReceive TEXT NOT NULL,
-            confirmed DATETIME NOT NULL,
-            blockHeight INTEGER NOT NULL,
-            PRIMARY KEY (hash, walletId, slug, sentReceive, walletName)
-        )`);
-  }
-
-  private async insertIOs(
-    inputs: InputOutput[] | undefined,
-    outputs: InputOutput[] | undefined,
-    hash: string
-  ) {
-    await Promise.allSettled([
-      inputs &&
-        Promise.allSettled(
-          inputs.map(input => {
-            input.hash = hash;
-            input.type = IOtype.INPUT;
-            return this.inputOutput.insert(input);
-          })
-        ),
-      outputs &&
-        Promise.allSettled(
-          outputs.map(output => {
-            output.hash = hash;
-            output.type = IOtype.OUTPUT;
-            return this.inputOutput.insert(output);
-          })
-        )
-    ]);
+    this.db.createIndex({
+      index: {
+        name: 'idx-confirmed',
+        fields: ['confirmed']
+      }
+    });
+    this.db.createIndex({
+      index: {
+        name: 'idx-confirmations',
+        fields: ['confirmations']
+      }
+    });
   }
 
   public async insert(txn: Transaction) {
-    await this.insertIOs(txn.inputs, txn.outputs, txn.hash);
-    delete txn.inputs;
-    delete txn.outputs;
-    // Inserting transaction after inserting inputs and outputs cause
-    // the insert event gets triggered after the below line.
-    const existingTxns = await this.getAll({
-      hash: txn.hash,
-      walletId: txn.walletId,
-      coin: txn.coin,
-      sentReceive: txn.sentReceive
-    });
-    if (existingTxns.length > 0) {
-      await this.update(txn, {
-        hash: txn.hash,
-        walletId: txn.walletId,
-        slug: txn.slug,
-        sentReceive: txn.sentReceive
-      });
-    } else {
-      await super.insert(txn);
-    }
+    txn._id = [txn.confirmed, txn.confirmations, txn.hash].join('/');
+    await super.insert(txn);
   }
 
-  public async getAllTXns(
-    query: TxQueryOptions,
+  /**
+   * Gets all transactions from the local database.
+   *
+   * @return promise that resolves to a list of transactions
+   */
+  public async getAllTxns(
+    query?: {
+      walletId?: string;
+      hash?: string;
+      ethCoin?: string;
+      sentReceive?: SentReceive;
+      walletName?: string;
+      coin?: string;
+      excludeFees?: boolean;
+      excludeFailed?: boolean;
+      excludePending?: boolean;
+      sinceDate?: Date;
+      status?: 'PENDING' | 'SUCCESS' | 'FAILED';
+      minConfirmations?: number;
+    },
     sorting?: {
-      sort: string;
-      order?: 'asc' | 'desc';
+      indexName: 'idx-confirmed';
+      field: 'confirmed';
       limit?: number;
     }
   ) {
-    let andQuery = '';
-    let andQueryValues = [];
-    if (query.excludeFees) {
-      delete query.excludeFees;
-      andQuery += ' AND sentReceive <> "FEES"';
-    }
-    if (query.excludeFailed) {
-      delete query.excludeFailed;
-      andQuery += ' AND status <> 2';
-    }
+    let dbQuery: any = {};
 
-    if (query.excludePending) {
-      andQuery += ' AND status <> 0';
-    }
-    delete query.excludePending;
+    if (query) {
+      let innerQuery: any = {};
+      const andQuery: any = [];
+      if (query.excludeFees) {
+        delete query.excludeFees;
+        andQuery.push({ $not: { sentReceive: 'FEES' } });
+      }
 
-    if (query.sinceDate) {
-      andQueryValues.push(query.sinceDate.getTime());
-      andQuery += ' AND confirmed >= ?';
-    }
-    delete query.sinceDate;
+      if (query.excludeFailed) {
+        delete query.excludeFailed;
+        const q = { $not: { status: 2 } };
+        andQuery.push(q);
+      }
 
-    if (query.minConfirmations) {
-      andQueryValues.push(query.minConfirmations);
-      andQuery += ' AND confirmations >= ?';
-    }
-    delete query.minConfirmations;
+      if (query.excludePending) {
+        delete query.excludePending;
+        const q = { $not: { status: 0 } };
+        andQuery.push(q);
+      }
 
-    if (query.statusMessage) {
-      const statusCode =
-        query.statusMessage === 'PENDING'
-          ? 0
-          : query.statusMessage === 'SUCCESS'
-          ? 1
-          : 2;
-      andQueryValues.push(statusCode);
-      andQuery += ' AND status = ?';
-    }
-    delete query.statusMessage;
-    let txns;
+      if (query.sinceDate) {
+        innerQuery.confirmed = { $gt: query.sinceDate };
+        delete query.sinceDate;
+      }
 
-    if (andQuery.length > 0) {
-      txns = await super.getAll(query, sorting, andQuery, andQueryValues);
-    } else {
-      txns = await super.getAll(query, sorting);
+      if (query.minConfirmations) {
+        innerQuery.confirmations = { $gte: query.minConfirmations };
+        delete query.minConfirmations;
+      }
+
+      if (query.status) {
+        innerQuery.status =
+          query.status === 'PENDING' ? 0 : query.status === 'SUCCESS' ? 1 : 2;
+        delete query.status;
+      }
+
+      if (Object.keys(query).length > 0) {
+        delete query.excludeFees;
+        delete query.excludeFailed;
+        delete query.sinceDate;
+        innerQuery = { ...innerQuery, ...query };
+      }
+
+      if (Object.keys(innerQuery).length > 0) {
+        if (andQuery.length > 0) {
+          andQuery.push({ ...innerQuery });
+          dbQuery.$and = andQuery;
+        } else {
+          dbQuery = { ...innerQuery };
+        }
+      } else {
+        dbQuery.$and = andQuery;
+      }
     }
-    await Promise.all(
-      txns.map(async txn => {
-        txn.inputs = await this.inputOutput.getAll({
-          hash: txn.hash,
-          type: IOtype.INPUT
-        });
-        txn.outputs = await this.inputOutput.getAll({
-          hash: txn.hash,
-          type: IOtype.OUTPUT
-        });
-      })
-    );
-    return txns;
+    if (sorting?.indexName) {
+      if (sorting.limit) {
+        return (
+          await this.db.find({
+            selector: dbQuery,
+            use_index: sorting.indexName,
+            limit: sorting.limit,
+            sort: [{ [sorting.field]: 'desc' }]
+          })
+        ).docs;
+      }
+      return (
+        await this.db.find({
+          selector: dbQuery,
+          use_index: sorting.indexName,
+          sort: [{ [sorting.field]: 'desc' }]
+        })
+      ).docs;
+    }
+    return (await this.db.find({ selector: dbQuery })).docs;
   }
 
   public async insertFromFullTxn(transaction: {
@@ -330,13 +314,13 @@ export class TransactionDb extends Db<Transaction> {
       };
 
       // Update the confirmations of txns with same hash
-      await this.update(
+      await this.findAndUpdate(
+        { hash: txn.hash, walletId: walletId },
         {
           confirmations: newTxn.confirmations,
           blockHeight: newTxn.blockHeight,
           status: newTxn.status
-        },
-        { hash: txn.hash, walletId: walletId }
+        }
       );
       await this.insert(newTxn);
       this.emit('insert');
@@ -598,7 +582,7 @@ export class TransactionDb extends Db<Transaction> {
 
       // Update the confirmations of txns with same hash
       if (existingTxns && existingTxns.length > 0) {
-        await this.update(
+        await this.findAndUpdate(
           {
             confirmations: newTxn.confirmations,
             blockHeight: newTxn.blockHeight,
@@ -700,27 +684,29 @@ export class TransactionDb extends Db<Transaction> {
     }
   }
 
-  public async delete(query?: Partial<Transaction>) {
-    const txns = await super.getAll(query);
-    await Promise.all(
-      txns.map(txn => {
-        return this.inputOutput.delete({ hash: txn.hash });
-      })
-    );
-    await super.delete(query);
-  }
-
   /**
    * Set all the pending txn waiting for confirmations to failure after specified time.
    */
   public async failExpiredTxn() {
     // expire txns after 24 hours
-    const expireTime =
-      new Date().getTime() - PENDING_TO_FAIL_TIMEOUT_IN_HOURS * 60 * 60 * 1000;
-    await this.executeSql(
-      'UPDATE transactions SET status = 0 WHERE status = 1 AND confirmed < ?',
-      [expireTime]
-    );
+    await this.db
+      .find({
+        selector: {
+          status: 0,
+          confirmed: {
+            $lt: new Date(
+              Date.now() - PENDING_TO_FAIL_TIMEOUT_IN_HOURS * 60 * 60 * 1000
+            )
+          }
+        }
+      })
+      .then(async results => {
+        const updatedResults = results.docs.map(doc => {
+          doc.status = 2;
+          return doc;
+        });
+        this.db.bulkDocs(updatedResults);
+      });
   }
 
   /**
@@ -734,12 +720,12 @@ export class TransactionDb extends Db<Transaction> {
     }
 
     if (txn.coinType === 'eth' || txn.coinType === 'ethr') {
-      this.update(
+      this.findAndUpdate(
+        { hash: txn.hash.toLowerCase() },
         {
           status: txn.isError ? 2 : 1,
           confirmations: txn.confirmations || 0
-        },
-        { hash: txn.hash.toLowerCase() }
+        }
       ).then(() => this.emit('insert'));
 
       return txn.confirmations || 0;
@@ -767,9 +753,9 @@ export class TransactionDb extends Db<Transaction> {
           updatedValues.blockHeight = txn.block_height;
         }
 
-        this.update(updatedValues, { hash: txn.hash }).then(() =>
-          this.emit('insert')
-        );
+        this.findAndUpdate({ hash: txn.hash }, updatedValues).then(() => {
+          this.emit('update');
+        });
         return updatedValues.confirmations;
       } else if (txn.block_height) {
         const allTx = await this.getAll({ hash: txn.hash });
@@ -784,9 +770,9 @@ export class TransactionDb extends Db<Transaction> {
           transaction.blockHeight !== -1
         ) {
           const confirmations = txn.block_height - transaction.blockHeight + 1;
-          this.update(
-            { confirmations, status: confirmations >= 1 ? 1 : 0 },
-            { hash: txn.hash }
+          this.findAndUpdate(
+            { hash: txn.hash },
+            { confirmations, status: confirmations >= 1 ? 1 : 0 }
           );
           return confirmations;
         }
@@ -794,5 +780,15 @@ export class TransactionDb extends Db<Transaction> {
     }
 
     return 0;
+  }
+
+  public async getTopBlock(query: TxQueryOptions) {
+    const res = await this.getAllTxns(query);
+    if (res.length === 0) return undefined;
+    // find max block height
+    const maxBlockHeight = res.reduce((acc, curr) => {
+      return acc > curr.blockHeight ? acc : curr.blockHeight;
+    }, res[0].blockHeight);
+    return maxBlockHeight;
   }
 }

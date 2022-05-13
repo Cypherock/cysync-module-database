@@ -23,7 +23,10 @@ export abstract class Db<T> {
   constructor(table: string, enDb?: PassEncrypt) {
     this.table = table;
     this.refEnDb = enDb;
-    this.db = new PouchDB<T>(table, { adapter: 'websql', auto_compaction: true });
+    this.db = new PouchDB<T>(table, {
+      adapter: 'websql',
+      auto_compaction: true
+    });
     this.db.transform({
       incoming: (doc: any) => {
         if (
