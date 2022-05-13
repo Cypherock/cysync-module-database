@@ -219,7 +219,10 @@ export class TransactionDb extends Db<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map(elem => elem.address)
+          addressFromDB.map(elem => {
+            if (elem?.address) return elem.address;
+            return '';
+          })
         );
       }
 
@@ -475,7 +478,10 @@ export class TransactionDb extends Db<Transaction> {
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
-          addressFromDB.map(elem => elem.address)
+          addressFromDB.map(elem => {
+            if (elem) return elem.address;
+            return '';
+          })
         );
       }
 

@@ -1,8 +1,10 @@
+import IModel from "./model";
+
 enum BIPType {
   BIP32 = 0,
   BIP44 = 1
 }
-export default interface ISendAddress {
+export default interface ISendAddress extends IModel {
   address: string;
   walletId: string;
   coinType: string;

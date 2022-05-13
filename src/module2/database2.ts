@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs2';
-// import logger from '../utils/logger';
+import logger from '../utils/logger';
 import PouchDB from 'pouchdb';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
@@ -30,7 +30,11 @@ export abstract class Db<T> {
 
   public async insert(doc: T) {
     console.log('insert', doc);
-    await this.db.put(doc);
+    try {
+      await this.db.put(doc, { force: true });
+    } catch(e) {
+      logger.error('insert error', e);
+    }
     this.emit('insert');
   }
 
@@ -71,9 +75,9 @@ export abstract class Db<T> {
     const updatedDocs = docs.map(each => {
       return {
         ...each,
-        ...doc,
-      }
-    })
+        ...doc
+      };
+    });
     await this.db.bulkDocs(updatedDocs);
     this.emit('update');
   }

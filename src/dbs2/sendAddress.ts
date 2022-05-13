@@ -1,21 +1,14 @@
-import { Db } from '../module2/database';
+import { Db } from '../module2/database2';
 import SendAddress from '../models2/sendAddress';
 
 export class SendAddressDb extends Db<SendAddress> {
   constructor() {
     super('sendAddress');
-    this.executeSql(`CREATE TABLE IF NOT EXISTS ${this.table} (
-            address TEXT NOT NULL,
-            walletId TEXT NOT NULL,
-            coinType TEXT NOT NULL,
-            chainIndex INTEGER NOT NULL,
-            addressIndex INTEGER NOT NULL,
-            isSegwit BOOL NOT NULL,
-            bipType INTEGER,
-            PRIMARY KEY (address)
-        )`);
   }
-
+  public async insert(doc: SendAddress) {
+    doc._id = doc.address + doc.walletId;
+    await super.insert(doc);
+  }
   /**
    * returns a promise which resolves to chainIndex and addressIndex of the given address in the database.
    * If not found, returns null.
@@ -29,12 +22,12 @@ export class SendAddressDb extends Db<SendAddress> {
     addressIndex: number;
     isSegwit: boolean;
   } | null> {
-    const all = await this.getAll({ address, walletId, coinType });
-    if (all.length === 0) {
+    const all = await this.getOne({ address, walletId, coinType });
+    if (!all) {
       return null;
     }
 
-    const { chainIndex, addressIndex, isSegwit } = all[0];
+    const { chainIndex, addressIndex, isSegwit } = all;
 
     // Chain Index or address Index -1 means that the data is missing.
     if (
