@@ -5,6 +5,6 @@ export default interface Token extends IModel {
   networkId: number;
   coin: string;
   slug: string;
-  price: string;
+  price: number;
   balance: string;
 }
