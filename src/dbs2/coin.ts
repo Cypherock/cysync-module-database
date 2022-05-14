@@ -10,7 +10,7 @@ export class CoinDb extends Db<Coin> {
   }
 
   public async insert(coin: Coin) {
-    coin._id = coin.slug + coin.walletId + coin.xpub;
+    coin._id = coin.slug + coin.walletId;
     coin.isEncrypted = ISENCRYPTED.NO;
     await super.insert(coin);
   }

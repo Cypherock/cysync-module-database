@@ -6,7 +6,7 @@ export default interface Coin extends IModel {
   walletId: string;
   networkId: number;
   slug: string;
-  price: string;
+  price: number;
   xpub: string;
   zpub?: string;
   xpubBalance: string;
