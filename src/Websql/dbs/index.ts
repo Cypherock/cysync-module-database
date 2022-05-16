@@ -10,14 +10,14 @@ import PassEncrypt from './passHash';
 import PriceHistoryDb from './priceHistory';
 
 export {
-  WalletDb as WalletDb2,
-  DeviceDb as DeviceDb2,
-  TokenDb as TokenDb2,
-  CoinDb as CoinDb2,
+  WalletDb,
+  DeviceDb,
+  TokenDb,
+  CoinDb,
   SendAddressDb,
-  ReceiveAddressDb as ReceiveAddressDb2,
-  TransactionDb as TransactionDb2,
+  ReceiveAddressDb,
+  TransactionDb,
   PassEncrypt,
-  NotificationDb as NotificationDb2,
+  NotificationDb,
   PriceHistoryDb
 };
