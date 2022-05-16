@@ -29,6 +29,11 @@ export class NotificationDb extends Database<Notification> {
     return res.docs;
   }
 
+  /**
+   * This function is used to get the last notification in Db. So the client can pass this to 
+   * server and fetch all the latest notifications that are not present on client/
+   * @returns {Promise<Notification>}
+   */
   public async getLastId(): Promise<Notification | null> {
     const res = await this.db.find({
       selector: {

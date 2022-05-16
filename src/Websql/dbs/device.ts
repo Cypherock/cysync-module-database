@@ -6,8 +6,6 @@ export class DeviceDb extends Database<Device> {
     super('device', 'v1');
   }
 
-
-
   public async getBySerial(serial: string) {
     const res = await this.db.find({ selector: { serial } });
     if (res.docs.length === 0) {
