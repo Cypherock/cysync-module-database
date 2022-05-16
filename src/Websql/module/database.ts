@@ -18,7 +18,7 @@ export abstract class Database<T> {
   protected refEnDb: PassEncrypt | undefined;
   /**
    *  on setting password, these fields would be encrypted
-   *  */
+   */
   protected secretFields = [''];
 
   constructor(table: string, databaseVersion?:string, enDb?: PassEncrypt) {
@@ -34,7 +34,7 @@ export abstract class Database<T> {
         if (
           this.refEnDb &&
           this.refEnDb?.passSet &&
-          doc.isEncrypted == ISENCRYPTED.NO
+          doc.isEncrypted === ISENCRYPTED.NO
         ) {
           this.secretFields.forEach(field => {
             doc[field] = enDb!.encryptData(doc[field]);
@@ -47,7 +47,7 @@ export abstract class Database<T> {
         if (
           this.refEnDb &&
           this.refEnDb.passSet &&
-          doc.isEncrypted == ISENCRYPTED.YES
+          doc.isEncrypted === ISENCRYPTED.YES
         ) {
           this.secretFields.forEach(field => {
             doc[field] = enDb!.decryptData(doc[field]);

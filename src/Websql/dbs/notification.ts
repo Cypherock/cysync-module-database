@@ -30,7 +30,7 @@ export class NotificationDb extends Database<Notification> {
   }
 
   /**
-   * This function is used to get the last notification in Db. So the client can pass this to 
+   * This function is used to get the last notification in Db. So the client can pass this to
    * server and fetch all the latest notifications that are not present on client/
    * @returns {Promise<Notification>}
    */

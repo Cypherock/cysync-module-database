@@ -16,7 +16,7 @@ export default interface ITransaction extends IModel {
   hash: string;
   /**
    *  Total = amount transferred + fees
-   *  */
+   */
   total?: string;
   fees?: string;
   /**
@@ -26,7 +26,7 @@ export default interface ITransaction extends IModel {
   confirmations: number;
   /**
    * walletId used by desktop app for a particular wallet
-   */  
+   */
   walletId: string;
   /**
    * walletName of blockcypher api wallet created for each coin
@@ -35,7 +35,7 @@ export default interface ITransaction extends IModel {
   /**
    * uniquer identifier of the crypto asset. Ex: ETH, BTC, USDT, etc.
    */
-  slug: string; 
+  slug: string;
   /**
    * If it's a token transaction, then this would be the coin slug.
    * This is done so as to extend support to other crypto assets like NFTs automatically.

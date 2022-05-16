@@ -39,6 +39,6 @@ export class SendAddressDb extends Database<SendAddress> {
       return null;
     }
 
-    return { chainIndex, addressIndex, isSegwit: isSegwit == true };
+    return { chainIndex, addressIndex, isSegwit: isSegwit === true };
   }
 }

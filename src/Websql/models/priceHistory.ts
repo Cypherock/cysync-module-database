@@ -17,7 +17,7 @@ export default interface IPriceHistory extends IModel {
      * As per the existing API, the number of data points for each interval is described below:
      * Week - 7 x 24 = 168
      * Month - 30 x 24 = 720
-     * Year - 365 
+     * Year - 365
      */
     data: number[][]
 }

@@ -314,7 +314,7 @@ export class TransactionDb extends Database<Transaction> {
 
       // Update the confirmations of txns with same hash
       await this.findAndUpdate(
-        { hash: txn.hash, walletId: walletId },
+        { hash: txn.hash, walletId },
         {
           confirmations: newTxn.confirmations,
           blockHeight: newTxn.blockHeight,
