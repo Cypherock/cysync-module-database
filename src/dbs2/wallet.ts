@@ -3,6 +3,6 @@ import Wallet from '../models2/wallet';
 
 export class WalletDb extends Db<Wallet> {
   constructor() {
-    super('wallet');
+    super('wallet', 'v1');
   }
 }

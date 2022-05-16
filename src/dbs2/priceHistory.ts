@@ -12,7 +12,7 @@ export default class PriceHistoryDb extends Db<PriceHistory> {
    * (Could be cypherock server, or any other server)
    */
   constructor() {
-    super('priceHistory');
+    super('priceHistory', 'v1');
   }
 
   /**

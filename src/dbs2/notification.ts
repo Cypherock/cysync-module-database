@@ -3,7 +3,7 @@ import Notification from '../models2/notification';
 
 export class NotificationDb extends Db<Notification> {
   constructor() {
-    super('notification');
+    super('notification', 'v1');
   }
 
   public async get(perPageLimit = 3) {

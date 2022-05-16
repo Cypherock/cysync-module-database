@@ -3,7 +3,7 @@ import SendAddress from '../models2/sendAddress';
 
 export class SendAddressDb extends Db<SendAddress> {
   constructor() {
-    super('sendAddress');
+    super('sendAddress', 'v1');
   }
   public async insert(doc: SendAddress) {
     doc._id = doc.address + doc.walletId;

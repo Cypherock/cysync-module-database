@@ -14,15 +14,17 @@ export abstract class Db<T> {
   protected table: string;
   protected db: PouchDB.Database<T>;
   public emitter = new EventEmitter();
+  public databaseVersion: string | undefined;
   protected refEnDb: PassEncrypt | undefined;
   /**
    *  on setting password, these fields would be encrypted
    *  */
   protected secretFields = [''];
 
-  constructor(table: string, enDb?: PassEncrypt) {
+  constructor(table: string, databaseVersion?:string, enDb?: PassEncrypt) {
     this.table = table;
     this.refEnDb = enDb;
+    this.databaseVersion = databaseVersion;
     this.db = new PouchDB<T>(table, {
       adapter: 'websql',
       auto_compaction: true
@@ -147,6 +149,23 @@ export abstract class Db<T> {
     this.refEnDb?.destroyHash();
     if (docs.length > 0) {
       await this.db.bulkDocs(docs);
+    }
+  }
+
+  public async hasIncompatableData() {
+    if (this.databaseVersion) {
+      const incompatibaleData = await this.db.find({
+        selector: {
+          $or: [
+            { databaseVersion: { $ne: this.databaseVersion } },
+            { databaseVersion: { $exists: false } }
+          ]
+        }
+      });
+
+      return incompatibaleData.docs.length > 0;
+    } else {
+      return false;
     }
   }
 }

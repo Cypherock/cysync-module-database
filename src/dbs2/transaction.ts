@@ -32,7 +32,7 @@ export interface TxQueryOptions extends Partial<Omit<Transaction, 'status'>> {
 export class TransactionDb extends Db<Transaction> {
   public counter = 0;
   constructor() {
-    super('transactions');
+    super('transactions', 'v1');
     this.db.createIndex({
       index: {
         name: 'idx-confirmed',

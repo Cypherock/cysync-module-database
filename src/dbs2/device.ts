@@ -3,7 +3,7 @@ import Device from '../models2/device';
 
 export class DeviceDb extends Db<Device> {
   constructor() {
-    super('device');
+    super('device', 'v1');
   }
 
 

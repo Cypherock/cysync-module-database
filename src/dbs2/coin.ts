@@ -5,7 +5,7 @@ import { ISENCRYPTED } from '../models2/model';
 
 export class CoinDb extends Db<Coin> {
   constructor(enDb?: PassEncrypt) {
-    super('coin', enDb);
+    super('coin', 'v1', enDb);
     this.secretFields = ['xpub', 'zpub'];
   }
 

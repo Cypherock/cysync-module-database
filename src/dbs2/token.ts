@@ -3,7 +3,7 @@ import Token from '../models2/token';
 
 export class TokenDb extends Db<Token> {
   constructor() {
-    super('token');
+    super('token', 'v1');
   }
 
   public async insert(token: Token): Promise<void> {

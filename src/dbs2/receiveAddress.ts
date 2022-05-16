@@ -3,7 +3,7 @@ import ReceiveAddress from '../models2/receiveAddress';
 
 export class ReceiveAddressDb extends Db<ReceiveAddress> {
   constructor() {
-    super('receiveAddress');
+    super('receiveAddress', 'v1');
   }
 
   public async insert(doc: ReceiveAddress) {
