@@ -1,7 +1,7 @@
-import { Db } from '../module2/database2';
-import Token from '../models2/token';
+import { Database } from '../module/database';
+import Token from '../models/token';
 
-export class TokenDb extends Db<Token> {
+export class TokenDb extends Database<Token> {
   constructor() {
     super('token', 'v1');
   }

@@ -1,12 +1,12 @@
-import { Db } from '../module2/database2';
-import Transaction, { SentReceive, Status } from '../models2/transaction';
+import { Database } from '../module/database';
+import Transaction, { SentReceive, Status } from '../models/transaction';
 import BigNumber from 'bignumber.js';
-import { InputOutput, IOtype } from '../models2/inputOutput';
+import { InputOutput, IOtype } from '../models/inputOutput';
 import { SendAddressDb } from './sendAddress';
 import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
 import { utils } from 'ethers';
-import logger from '../utils/logger';
-import { Transaction2 } from '../models2';
+import logger from '../../utils/logger';
+import { Transaction2 } from '../models';
 
 const isBtcFork = (coinStr: string) => {
   const coin = ALLCOINS[coinStr.toLowerCase()];
@@ -29,7 +29,7 @@ export interface TxQueryOptions extends Partial<Omit<Transaction, 'status'>> {
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
 
-export class TransactionDb extends Db<Transaction> {
+export class TransactionDb extends Database<Transaction> {
   public counter = 0;
   constructor() {
     super('transactions', 'v1');

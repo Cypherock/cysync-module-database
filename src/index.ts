@@ -1,6 +1,6 @@
-export * from './dbs';
-export * from './models';
+export * from './Nedb/dbs';
+export * from './Nedb/models';
 export * from './errors';
 
-export * from './dbs2';
-export * from './models2';
+export * from './Websql/dbs';
+export * from './Websql/models';

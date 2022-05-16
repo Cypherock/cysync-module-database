@@ -1,7 +1,7 @@
-import { Db } from '../module2/database2';
-import ReceiveAddress from '../models2/receiveAddress';
+import { Database } from '../module/database';
+import ReceiveAddress from '../models/receiveAddress';
 
-export class ReceiveAddressDb extends Db<ReceiveAddress> {
+export class ReceiveAddressDb extends Database<ReceiveAddress> {
   constructor() {
     super('receiveAddress', 'v1');
   }

@@ -1,5 +1,5 @@
 import aesjs from 'aes-js';
-import { DatabaseError, DatabaseErrorType } from '../errors';
+import { DatabaseError, DatabaseErrorType } from '../../errors';
 import crypto from 'crypto';
 export default class PassEncrypt {
   private passHash: Uint8Array = new Uint8Array(32);

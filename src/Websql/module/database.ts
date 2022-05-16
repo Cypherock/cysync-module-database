@@ -1,16 +1,16 @@
 import { EventEmitter } from 'events';
-import { PassEncrypt } from '../dbs2';
-import logger from '../utils/logger';
+import { PassEncrypt } from '../dbs';
+import logger from '../../utils/logger';
 import PouchDB from 'pouchdb';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
 import PouchTransform from 'transform-pouch';
-import IModel, { ISENCRYPTED } from '../models2/model';
+import IModel, { ISENCRYPTED } from '../models/model';
 PouchDB.plugin(PouchDBWebSQLAdapter);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
 
-export abstract class Db<T> {
+export abstract class Database<T> {
   protected table: string;
   protected db: PouchDB.Database<T>;
   public emitter = new EventEmitter();

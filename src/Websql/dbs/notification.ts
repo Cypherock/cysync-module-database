@@ -1,7 +1,7 @@
-import { Db } from '../module2/database2';
-import Notification from '../models2/notification';
+import { Database } from '../module/database';
+import Notification from '../models/notification';
 
-export class NotificationDb extends Db<Notification> {
+export class NotificationDb extends Database<Notification> {
   constructor() {
     super('notification', 'v1');
   }

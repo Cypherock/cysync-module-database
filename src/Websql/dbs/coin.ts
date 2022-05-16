@@ -1,9 +1,9 @@
-import { Db } from '../module2/database2';
-import Coin from '../models2/coin';
-import { PassEncrypt } from '../dbs2';
-import { ISENCRYPTED } from '../models2/model';
+import { Database } from '../module/database';
+import Coin from '../models/coin';
+import { PassEncrypt } from '.';
+import { ISENCRYPTED } from '../models/model';
 
-export class CoinDb extends Db<Coin> {
+export class CoinDb extends Database<Coin> {
   constructor(enDb?: PassEncrypt) {
     super('coin', 'v1', enDb);
     this.secretFields = ['xpub', 'zpub'];
