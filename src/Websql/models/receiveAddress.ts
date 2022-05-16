@@ -1,4 +1,4 @@
-import IModel from "./model";
+import IModel from './model';
 
 export default interface IReceiveAddress extends IModel {
   address: string;

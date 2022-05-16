@@ -1,4 +1,4 @@
-import IModel from "./model";
+import IModel from './model';
 
 /**
  * A model to store any other crypto assets like Tokens, NFTs, etc except the native currency of the network.

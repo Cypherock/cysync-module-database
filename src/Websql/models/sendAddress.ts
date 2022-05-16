@@ -1,4 +1,4 @@
-import IModel from "./model";
+import IModel from './model';
 
 enum BIPType {
   BIP32 = 0,

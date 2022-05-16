@@ -1,4 +1,4 @@
-import IModel from "./model";
+import IModel from './model';
 
 /**
  * A model to store the coin information. Here, coin refers to the native currency of the network.

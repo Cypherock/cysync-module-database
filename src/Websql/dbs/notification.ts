@@ -13,7 +13,7 @@ export class NotificationDb extends Database<Notification> {
       },
       sort: [{ _id: 'desc' }],
       limit: perPageLimit
-    })
+    });
 
     return res.docs;
   }

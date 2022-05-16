@@ -21,7 +21,7 @@ export abstract class Database<T> {
    */
   protected secretFields = [''];
 
-  constructor(table: string, databaseVersion?:string, enDb?: PassEncrypt) {
+  constructor(table: string, databaseVersion?: string, enDb?: PassEncrypt) {
     this.table = table;
     this.refEnDb = enDb;
     this.databaseVersion = databaseVersion;
