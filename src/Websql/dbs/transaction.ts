@@ -6,7 +6,6 @@ import { SendAddressDb } from './sendAddress';
 import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
 import { utils } from 'ethers';
 import logger from '../../utils/logger';
-import { Transaction2 } from '../models';
 
 const isBtcFork = (coinStr: string) => {
   const coin = ALLCOINS[coinStr.toLowerCase()];
@@ -563,7 +562,7 @@ export class TransactionDb extends Database<Transaction> {
         confirmed = new Date(txn.blockTime * 1000);
       }
 
-      const newTxn: Transaction2 = {
+      const newTxn: Transaction = {
         hash: txn.txid,
         total: String(txn.value),
         fees: String(txn.fees),

@@ -1,5 +1,8 @@
 export default interface INotification {
-  _id: string;
+  /**
+   *  unique identifier determined by the server
+   *  */
+  _id: string; 
   title: string;
   description?: string;
   type: number;

@@ -8,24 +8,44 @@ export enum Status {
 
 export type SentReceive = 'SENT' | 'RECEIVED' | 'FEES';
 
-// Amounts are in string, because for ETH it'll exceed JS Max Number
+/**
+ * A model to store the blockchain transactions. It has an optional inputs/outputs fields
+ * for BTC-like Transactions where UTXOs are needed. For other networks like ETH, it would be empty/
+ */
 export default interface ITransaction extends IModel {
   hash: string;
-  // Total is the total amount transferred in txn
+  /**
+   *  Total = amount transferred + fees
+   *  */
   total?: string;
-  // Fee in txn
   fees?: string;
-  // Amount to display in txn list
+  /**
+   * Transferred amount excluding fees
+   */
   amount: string;
   confirmations: number;
-  // walletId used by desktop app for a particular wallet
+  /**
+   * walletId used by desktop app for a particular wallet
+   */  
   walletId: string;
-  // walletName of blockcypher api wallet created for each coin
+  /**
+   * walletName of blockcypher api wallet created for each coin
+   */
   walletName?: string;
-  slug: string;
+  /**
+   * uniquer identifier of the crypto asset. Ex: ETH, BTC, USDT, etc.
+   */
+  slug: string; 
+  /**
+   * If it's a token transaction, then this would be the coin slug.
+   * This is done so as to extend support to other crypto assets like NFTs automatically.
+   */
   coin?: string;
   status: Status;
   sentReceive: SentReceive;
+  /**
+   * Tx creation date is stored here first. Once its confirmed on the blockchain it will be updated.
+   */
   confirmed: Date;
   blockHeight: number;
   inputs?: InputOutput[];

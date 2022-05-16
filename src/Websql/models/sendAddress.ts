@@ -10,6 +10,12 @@ export default interface ISendAddress extends IModel {
   coinType: string;
   chainIndex: number;
   addressIndex: number;
+  /**
+   * As a part of BIP141, a superior efficient Tx format Segwit was introduced.
+   */
   isSegwit: boolean;
+  /**
+   * Currently not utilised. But a field that is expected to store BIPType of the address.
+   */
   bipType?: BIPType;
 }
