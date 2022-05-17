@@ -1,6 +1,6 @@
 import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
-import PassEncrypt from '../../Websql/dbs/passHash';
+import PassEncrypt from '../../websql/dbs/passHash';
 import { DatabaseError, DatabaseErrorType } from '../../errors';
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
