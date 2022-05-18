@@ -2,7 +2,7 @@ import { Database } from '../module/database';
 import Transaction, { SentReceive, Status } from '../models/transaction';
 import BigNumber from 'bignumber.js';
 import { InputOutput, IOtype } from '../models/inputOutput';
-import { SendAddressDb } from './sendAddress';
+import { SendAddressDB } from './sendAddress';
 import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
 import { utils } from 'ethers';
 import logger from '../../utils/logger';
@@ -28,7 +28,7 @@ export interface TxQueryOptions extends Partial<Omit<Transaction, 'status'>> {
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
 
-export class TransactionDb extends Database<Transaction> {
+export class TransactionDB extends Database<Transaction> {
   public counter = 0;
   constructor() {
     super('transactions', 'v1');
@@ -161,7 +161,7 @@ export class TransactionDb extends Database<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-    sendAddressDB: SendAddressDb;
+    sendAddressDB: SendAddressDB;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -420,7 +420,7 @@ export class TransactionDb extends Database<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-    sendAddressDB: SendAddressDb;
+    sendAddressDB: SendAddressDB;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {

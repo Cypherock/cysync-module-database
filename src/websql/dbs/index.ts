@@ -1,23 +1,23 @@
-import { WalletDb } from './wallet';
-import { DeviceDb } from './device';
-import { TokenDb } from './token';
-import { CoinDb } from './coin';
-import { SendAddressDb } from './sendAddress';
-import { ReceiveAddressDb } from './receiveAddress';
-import { TransactionDb } from './transaction';
-import { NotificationDb } from './notification';
+import { WalletDB } from './wallet';
+import { DeviceDB } from './device';
+import { TokenDB } from './token';
+import { CoinDB } from './coin';
+import { SendAddressDB } from './sendAddress';
+import { ReceiveAddressDB } from './receiveAddress';
+import { TransactionDB } from './transaction';
+import { NotificationDB } from './notification';
 import PassEncrypt from './passHash';
-import PriceHistoryDb from './priceHistory';
+import PriceHistoryDB from './priceHistory';
 
 export {
-  WalletDb,
-  DeviceDb,
-  TokenDb,
-  CoinDb,
-  SendAddressDb,
-  ReceiveAddressDb,
-  TransactionDb,
+  WalletDB,
+  DeviceDB,
+  TokenDB,
+  CoinDB,
+  SendAddressDB,
+  ReceiveAddressDB,
+  TransactionDB,
   PassEncrypt,
-  NotificationDb,
-  PriceHistoryDb
+  NotificationDB,
+  PriceHistoryDB
 };

@@ -6,7 +6,7 @@ import PriceHistory from '../models/priceHistory';
  *
  * @extends Database
  */
-export default class PriceHistoryDb extends Database<PriceHistory> {
+export default class PriceHistoryDB extends Database<PriceHistory> {
   /**
    * Calls the super constructor with the database name and the base URL to fetch the price
    * (Could be cypherock server, or any other server)

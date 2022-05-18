@@ -1,7 +1,7 @@
 import { Database } from '../module/database';
 import Device from '../models/device';
 
-export class DeviceDb extends Database<Device> {
+export class DeviceDB extends Database<Device> {
   constructor() {
     super('device', 'v1');
   }

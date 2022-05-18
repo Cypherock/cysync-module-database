@@ -3,7 +3,7 @@ import Coin from '../models/coin';
 import { PassEncrypt } from '.';
 import { ISENCRYPTED } from '../models/model';
 
-export class CoinDb extends Database<Coin> {
+export class CoinDB extends Database<Coin> {
   constructor(enDb?: PassEncrypt) {
     super('coin', 'v1', enDb);
     this.secretFields = ['xpub', 'zpub'];

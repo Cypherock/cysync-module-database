@@ -1,7 +1,7 @@
 import { Database } from '../module/database';
 import Token from '../models/token';
 
-export class TokenDb extends Database<Token> {
+export class TokenDB extends Database<Token> {
   constructor() {
     super('token', 'v1');
   }
