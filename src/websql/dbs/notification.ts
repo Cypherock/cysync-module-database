@@ -1,6 +1,10 @@
 import { Database } from '../module/database';
 import Notification from '../models/notification';
 
+/**
+ * NotificationDB stores the CySync notifications for Device updates, Cysync updates etc.
+ * 
+ */
 export class NotificationDB extends Database<Notification> {
   constructor() {
     super('notification', 'v1');

@@ -3,6 +3,11 @@ import Coin from '../models/coin';
 import { PassEncrypt } from '.';
 import { ISENCRYPTED } from '../models/model';
 
+/**
+ * CoinDB stores the native currency(coin) of a network.
+ * For example, ETH is the native currency of Ethereum.
+ * USDT, USDC are not meant to be stored here. Use TokenDB instead.
+ */
 export class CoinDB extends Database<Coin> {
   constructor(enDb?: PassEncrypt) {
     super('coin', 'v1', enDb);

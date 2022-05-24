@@ -18,6 +18,11 @@ const isBtcFork = (coinStr: string) => {
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 24;
 
+/**
+ * TransactionDB stores the transactions data of all required blockchain transactions.
+ * For BTC-like forks, it also stores the inputs and outputs. This would be essential in
+ * building a transaction. For other networks, inputs and outputs are not required.
+ */
 export interface TxQueryOptions extends Partial<Omit<Transaction, 'status'>> {
   excludeFees?: boolean;
   sinceDate?: Date;
