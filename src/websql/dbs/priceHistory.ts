@@ -2,7 +2,7 @@ import { Database } from '../module/database';
 import PriceHistory from '../models/priceHistory';
 
 /**
- * PriceHistoryDB stores the prices history of all currencies(coins+tokens) on 
+ * PriceHistoryDB stores the prices history of all currencies(coins+tokens) on
  * intervals of 1 week, 1 month and 1 year. The portfolio graph is built using
  * the data points stored in PriceHistoryDB.
  */

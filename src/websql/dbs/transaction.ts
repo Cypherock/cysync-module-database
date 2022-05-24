@@ -166,7 +166,7 @@ export class TransactionDB extends Database<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-   addressDB: AddressDB;
+    addressDB: AddressDB;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -177,7 +177,7 @@ export class TransactionDB extends Database<Transaction> {
       walletId,
       walletName,
       coinType,
-     addressDB,
+      addressDB,
       status
     } = transaction;
 
@@ -425,7 +425,7 @@ export class TransactionDB extends Database<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-   addressDB: AddressDB;
+    addressDB: AddressDB;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -436,7 +436,7 @@ export class TransactionDB extends Database<Transaction> {
       walletId,
       walletName,
       coinType,
-     addressDB,
+      addressDB,
       status
     } = transaction;
 
