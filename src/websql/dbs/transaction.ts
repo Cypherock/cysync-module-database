@@ -2,7 +2,7 @@ import { Database } from '../module/database';
 import Transaction, { SentReceive, Status } from '../models/transaction';
 import BigNumber from 'bignumber.js';
 import { InputOutput, IOtype } from '../models/inputOutput';
-import { SendAddressDB } from './sendAddress';
+import { AddressDB } from './address';
 import { ALLCOINS, ERC20TOKENS } from '@cypherock/communication';
 import { utils } from 'ethers';
 import logger from '../../utils/logger';
@@ -166,7 +166,7 @@ export class TransactionDB extends Database<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-    sendAddressDB: SendAddressDB;
+   addressDB: AddressDB;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -177,7 +177,7 @@ export class TransactionDB extends Database<Transaction> {
       walletId,
       walletName,
       coinType,
-      sendAddressDB,
+     addressDB,
       status
     } = transaction;
 
@@ -203,7 +203,7 @@ export class TransactionDB extends Database<Transaction> {
       // Get all addresses of that xpub and coin
       // This is because the address from the API is of only 1 wallet,
       // Whereas there are 2 (or 4 in case od BTC & BTCT) wallets.
-      const addressFromDB = await sendAddressDB.getAll({ walletId, coinType });
+      const addressFromDB = await addressDB.getAll({ walletId, coinType });
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(
@@ -425,7 +425,7 @@ export class TransactionDB extends Database<Transaction> {
     addresses: any[];
     walletId: string;
     coinType: string;
-    sendAddressDB: SendAddressDB;
+   addressDB: AddressDB;
     walletName?: string;
     status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   }) {
@@ -436,7 +436,7 @@ export class TransactionDB extends Database<Transaction> {
       walletId,
       walletName,
       coinType,
-      sendAddressDB,
+     addressDB,
       status
     } = transaction;
 
@@ -462,7 +462,7 @@ export class TransactionDB extends Database<Transaction> {
       // Get all addresses of that xpub and coin
       // This is because the address from the API is of only 1 wallet,
       // Whereas there are 2 (or 4 in case od BTC & BTCT) wallets.
-      const addressFromDB = await sendAddressDB.getAll({ walletId, coinType });
+      const addressFromDB = await addressDB.getAll({ walletId, coinType });
 
       if (addressFromDB && addressFromDB.length > 0) {
         myAddresses = myAddresses.concat(

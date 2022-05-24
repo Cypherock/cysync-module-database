@@ -2,7 +2,7 @@ import { WalletDB } from './wallet';
 import { DeviceDB } from './device';
 import { TokenDB } from './token';
 import { CoinDB } from './coin';
-import { SendAddressDB } from './sendAddress';
+import { AddressDB } from './address';
 import { ReceiveAddressDB } from './receiveAddress';
 import { TransactionDB } from './transaction';
 import { NotificationDB } from './notification';
@@ -14,7 +14,7 @@ export {
   DeviceDB,
   TokenDB,
   CoinDB,
-  SendAddressDB,
+  AddressDB,
   ReceiveAddressDB,
   TransactionDB,
   PassEncrypt,

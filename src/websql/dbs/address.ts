@@ -1,11 +1,14 @@
 import { Database } from '../module/database';
-import SendAddress from '../models/sendAddress';
+import Address from '../models/address';
 
-export class SendAddressDB extends Database<SendAddress> {
+/**
+ * AddressDB stores addresses of all wallets across the chain that has ever been encoutered.
+ */
+export class AddressDB extends Database<Address> {
   constructor() {
-    super('sendAddress', 'v1');
+    super('address', 'v1');
   }
-  public async insert(doc: SendAddress) {
+  public async insert(doc: Address) {
     doc._id = doc.address + doc.walletId;
     await super.insert(doc);
   }
