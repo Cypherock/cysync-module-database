@@ -16,15 +16,16 @@ export class AddressDB extends Database<Address> {
    * returns a promise which resolves to chainIndex and addressIndex of the given address in the database.
    * If not found, returns null.
    */
-  public async getChainIndex(
-    address: string,
-    walletId: string,
-    coinType: string
-  ): Promise<{
+  public async getChainIndex(options: {
+    address: string;
+    walletId: string;
+    coinType: string;
+  }): Promise<{
     chainIndex: number;
     addressIndex: number;
     isSegwit: boolean;
   } | null> {
+    const { address, walletId, coinType } = options;
     const all = await this.getOne({ address, walletId, coinType });
     if (!all) {
       return null;

@@ -17,7 +17,12 @@ export class TokenDB extends Database<Token> {
     await super.insert(token);
   }
 
-  public async updateBalance(walletId: string, slug: string, balance: string) {
+  public async updateBalance(options: {
+    walletId: string;
+    slug: string;
+    balance: string;
+  }) {
+    const { walletId, slug, balance } = options;
     await this.findAndUpdate({ walletId, slug }, { balance });
   }
 }

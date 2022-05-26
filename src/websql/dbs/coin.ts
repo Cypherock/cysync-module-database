@@ -20,34 +20,37 @@ export class CoinDB extends Database<Coin> {
     await super.insert(coin);
   }
 
-  public async updateXpubBalance(
-    xpub: string,
-    slug: string,
-    xpubBalance: string,
-    xpubUnconfirmedBalance: string
-  ): Promise<void> {
+  public async updateXpubBalance(options: {
+    xpub: string;
+    slug: string;
+    xpubBalance: string;
+    xpubUnconfirmedBalance: string;
+  }): Promise<void> {
+    const { xpub, slug, xpubBalance, xpubUnconfirmedBalance } = options;
     await this.findAndUpdate(
       { xpub, slug },
       { xpubBalance, xpubUnconfirmedBalance }
     );
   }
-  public async updateZpubBalance(
+  public async updateZpubBalance(options: {
     zpub: string,
     slug: string,
     zpubBalance: string,
     zpubUnconfirmedBalance: string
-  ): Promise<void> {
+  }): Promise<void> {
+    const { zpub, slug, zpubBalance, zpubUnconfirmedBalance } = options;
     await this.findAndUpdate(
       { zpub, slug },
       { zpubBalance, zpubUnconfirmedBalance }
     );
   }
-  public async updateTotalBalance(
+  public async updateTotalBalance(options: {
     xpub: string,
     slug: string,
     totalBalance: string,
     totalUnconfirmedBalance: string
-  ): Promise<void> {
+  }): Promise<void> {
+    const { xpub, slug, totalBalance, totalUnconfirmedBalance } = options;
     await this.findAndUpdate(
       { xpub, slug },
       { totalBalance, totalUnconfirmedBalance }
