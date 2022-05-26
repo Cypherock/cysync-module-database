@@ -10,7 +10,7 @@ import { ISENCRYPTED } from '../models/model';
  */
 export class CoinDB extends Database<Coin> {
   constructor(enDb?: PassEncrypt) {
-    super('coin', 'v1', enDb);
+    super('coin', { databaseVersion: 'v1', enDb });
     this.secretFields = ['xpub', 'zpub'];
   }
 
@@ -33,10 +33,10 @@ export class CoinDB extends Database<Coin> {
     );
   }
   public async updateZpubBalance(options: {
-    zpub: string,
-    slug: string,
-    zpubBalance: string,
-    zpubUnconfirmedBalance: string
+    zpub: string;
+    slug: string;
+    zpubBalance: string;
+    zpubUnconfirmedBalance: string;
   }): Promise<void> {
     const { zpub, slug, zpubBalance, zpubUnconfirmedBalance } = options;
     await this.findAndUpdate(
@@ -45,10 +45,10 @@ export class CoinDB extends Database<Coin> {
     );
   }
   public async updateTotalBalance(options: {
-    xpub: string,
-    slug: string,
-    totalBalance: string,
-    totalUnconfirmedBalance: string
+    xpub: string;
+    slug: string;
+    totalBalance: string;
+    totalUnconfirmedBalance: string;
   }): Promise<void> {
     const { xpub, slug, totalBalance, totalUnconfirmedBalance } = options;
     await this.findAndUpdate(

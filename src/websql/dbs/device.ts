@@ -6,7 +6,7 @@ import Device from '../models/device';
  */
 export class DeviceDB extends Database<Device> {
   constructor() {
-    super('device', 'v1');
+    super('device', { databaseVersion: 'v1' });
   }
 
   public async getBySerial(serial: string) {

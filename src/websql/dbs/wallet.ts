@@ -6,6 +6,6 @@ import Wallet from '../models/wallet';
  */
 export class WalletDB extends Database<Wallet> {
   constructor() {
-    super('wallet', 'v1');
+    super('wallet', { databaseVersion: 'v1' });
   }
 }

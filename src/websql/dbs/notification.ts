@@ -7,7 +7,7 @@ import Notification from '../models/notification';
  */
 export class NotificationDB extends Database<Notification> {
   constructor() {
-    super('notification', 'v1');
+    super('notification', { databaseVersion: 'v1' });
   }
 
   public async getLatest(items = 3, skip = 0) {

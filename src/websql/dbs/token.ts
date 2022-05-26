@@ -9,7 +9,7 @@ import Token from '../models/token';
  */
 export class TokenDB extends Database<Token> {
   constructor() {
-    super('token', 'v1');
+    super('token', { databaseVersion: 'v1' });
   }
 
   public async insert(token: Token): Promise<void> {

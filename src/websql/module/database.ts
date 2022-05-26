@@ -20,8 +20,17 @@ export abstract class Database<T> {
    *  on setting password, these fields would be encrypted
    */
   protected secretFields = [''];
+  private fieldIndexMap = new Map<string, string>();
 
-  constructor(table: string, databaseVersion?: string, enDb?: PassEncrypt) {
+  constructor(
+    table: string,
+    options: {
+      databaseVersion: string;
+      indexedFields?: string[];
+      enDb?: PassEncrypt;
+    }
+  ) {
+    const { enDb, databaseVersion, indexedFields } = options;
     this.table = table;
     this.refEnDb = enDb;
     this.databaseVersion = databaseVersion;
@@ -29,6 +38,16 @@ export abstract class Database<T> {
       adapter: 'websql',
       auto_compaction: true
     });
+    if (indexedFields)
+      indexedFields.forEach(async field => {
+        const response = await this.db.createIndex({
+          index: {
+            name: `idx-${field}`,
+            fields: [field]
+          }
+        });
+        this.fieldIndexMap.set(field, (response as any).id);
+      });
     this.db.transform({
       incoming: (doc: any) => {
         if (
@@ -134,6 +153,31 @@ export abstract class Database<T> {
     const doc = await this.db.get(id);
     await this.db.remove(doc);
     this.emit('delete');
+  }
+
+  public async executeQuery(
+    dbQuery: any,
+    sorting?: {
+      field: string;
+      order: 'asc' | 'desc';
+      limit?: number;
+    }
+  ) {
+    if (sorting?.field) {
+      if (sorting && !this.fieldIndexMap.has(sorting.field))
+        throw new Error(
+          `Couldn't find index for the provided sorting field ${sorting.field}`
+        );
+      return (
+        await this.db.find({
+          selector: dbQuery,
+          limit: sorting.limit || -1,
+          use_index: this.fieldIndexMap.get(sorting.field),
+          sort: [{ [sorting.field]: sorting.order }]
+        })
+      ).docs;
+    }
+    return (await this.db.find({ selector: dbQuery })).docs;
   }
 
   public async encryptSecrets(singleHash: string): Promise<void> {
