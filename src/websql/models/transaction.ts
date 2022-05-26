@@ -6,7 +6,11 @@ export enum Status {
   FAILURE
 }
 
-export type SentReceive = 'SENT' | 'RECEIVED' | 'FEES';
+export enum SentReceive {
+  SENT,
+  RECEIVED,
+  FEES
+}
 
 /**
  * A model to store the blockchain transactions. It has an optional inputs/outputs fields

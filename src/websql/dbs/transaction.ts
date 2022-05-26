@@ -23,36 +23,43 @@ const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 24;
  * For BTC-like forks, it also stores the inputs and outputs. This would be essential in
  * building a transaction. For other networks, inputs and outputs are not required.
  */
-export interface TxQueryOptions extends Partial<Omit<Transaction, 'status'>> {
+export interface TxQuery {
+  hash?: string;
+  walletId?: string;
+  walletName?: string;
+  slug?: string;
+  coin?: string;
+  sentReceive?: SentReceive;
+  status?: Status;
+}
+export interface TxQueryOptions {
   excludeFees?: boolean;
-  sinceDate?: Date;
   excludeFailed?: boolean;
   excludePending?: boolean;
+  sinceDate?: Date;
   minConfirmations?: number;
-  statusMessage?: string;
-  status?: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
 
 export class TransactionDB extends Database<Transaction> {
   public counter = 0;
+  private fieldIndexMap = new Map<string, string>();
   constructor() {
     super('transactions', 'v1');
-    this.db.createIndex({
-      index: {
-        name: 'idx-confirmed',
-        fields: ['confirmed']
-      }
-    });
-    this.db.createIndex({
-      index: {
-        name: 'idx-confirmations',
-        fields: ['confirmations']
-      }
+    // Index creation for sorting
+    ['confirmed', 'blockHeight'].forEach(async field => {
+      
+      const response = await this.db.createIndex({
+        index: {
+          name: `idx-${field}`,
+          fields: [field]
+        }
+      });
+      this.fieldIndexMap.set(field, (response as any).id);
     });
   }
 
   public async insert(txn: Transaction) {
-    txn._id = [txn.confirmed, txn.confirmations, txn.hash].join('/');
+    txn._id = txn.confirmed + txn.blockHeight.toLocaleString() + txn.hash;
     await super.insert(txn);
   }
 
@@ -61,99 +68,77 @@ export class TransactionDB extends Database<Transaction> {
    *
    * @return promise that resolves to a list of transactions
    */
-  public async getAllTxns(
-    query?: {
-      walletId?: string;
-      hash?: string;
-      ethCoin?: string;
-      sentReceive?: SentReceive;
-      walletName?: string;
-      coin?: string;
-      excludeFees?: boolean;
-      excludeFailed?: boolean;
-      excludePending?: boolean;
-      sinceDate?: Date;
-      status?: 'PENDING' | 'SUCCESS' | 'FAILED';
-      minConfirmations?: number;
-    },
+  public async getAll(
+    query: TxQuery,
+    options?: TxQueryOptions,
     sorting?: {
-      indexName: 'idx-confirmed';
-      field: 'confirmed';
+      field: string;
+      order: 'asc' | 'desc';
       limit?: number;
     }
   ) {
     let dbQuery: any = {};
+    let innerQuery: any = {};
+    const andQuery: any = [];
 
-    if (query) {
-      let innerQuery: any = {};
-      const andQuery: any = [];
-      if (query.excludeFees) {
-        delete query.excludeFees;
+    if (sorting && !this.fieldIndexMap.has(sorting.field))
+      throw new Error(
+        `Couldn't find index for the provided sorting field ${sorting.field}`
+      );
+
+    if (options) {
+      if (options.excludeFees) {
+        delete options.excludeFees;
         andQuery.push({ $not: { sentReceive: 'FEES' } });
       }
 
-      if (query.excludeFailed) {
-        delete query.excludeFailed;
-        const q = { $not: { status: 2 } };
-        andQuery.push(q);
+      if (options.excludeFailed) {
+        delete options.excludeFailed;
+        andQuery.push({ $not: { status: 2 } });
       }
 
-      if (query.excludePending) {
-        delete query.excludePending;
-        const q = { $not: { status: 0 } };
-        andQuery.push(q);
+      if (options.excludePending) {
+        delete options.excludePending;
+        andQuery.push({ $not: { status: 0 } });
       }
 
-      if (query.sinceDate) {
-        innerQuery.confirmed = { $gt: query.sinceDate };
-        delete query.sinceDate;
+      if (options.sinceDate) {
+        innerQuery.confirmed = { $gt: options.sinceDate };
+        delete options.sinceDate;
       }
 
-      if (query.minConfirmations) {
-        innerQuery.confirmations = { $gte: query.minConfirmations };
-        delete query.minConfirmations;
-      }
-
-      if (query.status) {
-        innerQuery.status =
-          query.status === 'PENDING' ? 0 : query.status === 'SUCCESS' ? 1 : 2;
-        delete query.status;
-      }
-
-      if (Object.keys(query).length > 0) {
-        delete query.excludeFees;
-        delete query.excludeFailed;
-        delete query.sinceDate;
-        innerQuery = { ...innerQuery, ...query };
-      }
-
-      if (Object.keys(innerQuery).length > 0) {
-        if (andQuery.length > 0) {
-          andQuery.push({ ...innerQuery });
-          dbQuery.$and = andQuery;
-        } else {
-          dbQuery = { ...innerQuery };
-        }
-      } else {
-        dbQuery.$and = andQuery;
+      if (options.minConfirmations) {
+        innerQuery.confirmations = { $gte: options.minConfirmations };
+        delete options.minConfirmations;
       }
     }
-    if (sorting?.indexName) {
+    innerQuery = { ...innerQuery, ...query };
+    // Sort field must be a part of the selector
+    if (sorting?.field) innerQuery[sorting.field] = { $gte: null };
+
+    if (andQuery.length > 0) {
+      andQuery.push({ ...innerQuery });
+      dbQuery.$and = andQuery;
+    } else {
+      dbQuery = { ...innerQuery };
+    }
+
+    if (sorting?.field) {
       if (sorting.limit) {
         return (
           await this.db.find({
             selector: dbQuery,
-            use_index: sorting.indexName,
             limit: sorting.limit,
-            sort: [{ [sorting.field]: 'desc' }]
+            use_index: this.fieldIndexMap.get(sorting.field),
+            sort: [{ [sorting.field]: sorting.order }]
           })
         ).docs;
       }
       return (
         await this.db.find({
           selector: dbQuery,
-          use_index: sorting.indexName,
-          sort: [{ [sorting.field]: 'desc' }]
+          use_index: this.fieldIndexMap.get(sorting.field),
+          sort: [{ [sorting.field]: sorting.order }]
         })
       ).docs;
     }
@@ -248,7 +233,7 @@ export class TransactionDB extends Database<Transaction> {
       const existingTxns = await this.getAll({
         hash: txn.hash,
         walletId,
-        coin: coinType
+        slug: coinType
       });
 
       if (existingTxns && existingTxns.length > 0) {
@@ -294,9 +279,9 @@ export class TransactionDB extends Database<Transaction> {
       }
 
       if (totalValue.isGreaterThan(0)) {
-        sentReceive = 'RECEIVED';
+        sentReceive = SentReceive.RECEIVED;
       } else {
-        sentReceive = 'SENT';
+        sentReceive = SentReceive.SENT;
         totalValue = totalValue.plus(new BigNumber(txn.fees));
       }
 
@@ -383,7 +368,7 @@ export class TransactionDB extends Database<Transaction> {
           coin: coinType,
           // 2 for failed, 1 for pass
           status: txn.isError ? 2 : 1,
-          sentReceive: 'FEES',
+          sentReceive: SentReceive.FEES,
           confirmed: new Date(txn.timeStamp),
           blockHeight: txn.blockNumber,
           slug: coinType,
@@ -406,8 +391,8 @@ export class TransactionDB extends Database<Transaction> {
         status: txn.isError ? 2 : 1,
         sentReceive:
           myAddress.toLowerCase() === fromAddr.toLowerCase()
-            ? 'SENT'
-            : 'RECEIVED',
+            ? SentReceive.SENT
+            : SentReceive.RECEIVED,
         confirmed: new Date(txn.timeStamp),
         blockHeight: txn.blockNumber,
         coin: coinType,
@@ -555,9 +540,9 @@ export class TransactionDB extends Database<Transaction> {
       }
 
       if (totalValue.isGreaterThan(0)) {
-        sentReceive = 'RECEIVED';
+        sentReceive = SentReceive.RECEIVED;
       } else {
-        sentReceive = 'SENT';
+        sentReceive = SentReceive.SENT;
         totalValue = totalValue.plus(new BigNumber(txn.fees));
       }
 
@@ -652,7 +637,7 @@ export class TransactionDB extends Database<Transaction> {
           slug: coinType,
           // 2 for failed, 1 for pass
           status: txn.isError ? 2 : 1,
-          sentReceive: 'FEES',
+          sentReceive: SentReceive.FEES,
           confirmed: new Date(txn.timeStamp),
           blockHeight: txn.blockNumber,
           coin: coinType,
@@ -675,8 +660,8 @@ export class TransactionDB extends Database<Transaction> {
         status: txn.isError ? 2 : 1,
         sentReceive:
           myAddress.toLowerCase() === fromAddr.toLowerCase()
-            ? 'SENT'
-            : 'RECEIVED',
+            ? SentReceive.SENT
+            : SentReceive.RECEIVED,
         confirmed: new Date(txn.timeStamp),
         blockHeight: txn.blockNumber,
         coin: coinType,
@@ -786,13 +771,14 @@ export class TransactionDB extends Database<Transaction> {
     return 0;
   }
 
-  public async getTopBlock(query: TxQueryOptions) {
-    const res = await this.getAllTxns(query);
+  public async getTopBlock(query: TxQuery, options: TxQueryOptions) {
+    const res = await this.getAll(query, options, {
+      field: 'blockHeight',
+      order: 'desc',
+      limit: 1
+    });
     if (res.length === 0) return undefined;
-    // find max block height
-    const maxBlockHeight = res.reduce((acc, curr) => {
-      return acc > curr.blockHeight ? acc : curr.blockHeight;
-    }, res[0].blockHeight);
-    return maxBlockHeight;
+    // return max block height
+    return res[0].blockHeight;
   }
 }
