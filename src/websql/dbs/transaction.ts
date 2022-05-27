@@ -19,7 +19,8 @@ export class TransactionDB extends Database<Transaction> {
   }
 
   public async insert(txn: Transaction) {
-    txn._id = txn.confirmed + txn.blockHeight.toLocaleString() + txn.hash;
+    txn._id = txn.walletId;
+    txn.hash + txn.slug + txn.sentReceive;
     await super.insert(txn);
   }
 
