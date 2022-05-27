@@ -4,11 +4,11 @@ export default interface IModel {
    */
   _id?: string;
   _rev?: string;
-  isEncrypted?: ISENCRYPTED;
+  isEncrypted?: IS_ENCRYPTED;
   databaseVersion?: string;
 }
 
-export enum ISENCRYPTED {
+export enum IS_ENCRYPTED {
   NO = 0,
   YES = 1
 }

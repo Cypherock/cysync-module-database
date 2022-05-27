@@ -5,7 +5,7 @@ import PouchDB from 'pouchdb';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
 import PouchTransform from 'transform-pouch';
-import IModel, { ISENCRYPTED } from '../models/model';
+import IModel, { IS_ENCRYPTED } from '../models/model';
 PouchDB.plugin(PouchDBWebSQLAdapter);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
@@ -53,12 +53,12 @@ export abstract class Database<T> {
         if (
           this.refEnDb &&
           this.refEnDb?.passSet &&
-          doc.isEncrypted === ISENCRYPTED.NO
+          doc.isEncrypted === IS_ENCRYPTED.NO
         ) {
           this.secretFields.forEach(field => {
             doc[field] = enDb!.encryptData(doc[field]);
           });
-          doc.isEncrypted = ISENCRYPTED.YES;
+          doc.isEncrypted = IS_ENCRYPTED.YES;
         }
         return doc;
       },
@@ -66,12 +66,12 @@ export abstract class Database<T> {
         if (
           this.refEnDb &&
           this.refEnDb.passSet &&
-          doc.isEncrypted === ISENCRYPTED.YES
+          doc.isEncrypted === IS_ENCRYPTED.YES
         ) {
           this.secretFields.forEach(field => {
             doc[field] = enDb!.decryptData(doc[field]);
           });
-          doc.isEncrypted = ISENCRYPTED.NO;
+          doc.isEncrypted = IS_ENCRYPTED.NO;
         }
         return doc;
       }
@@ -181,7 +181,7 @@ export abstract class Database<T> {
   }
 
   public async encryptSecrets(singleHash: string): Promise<void> {
-    const docs = await this.getAll({ isEncrypted: ISENCRYPTED.NO });
+    const docs = await this.getAll({ isEncrypted: IS_ENCRYPTED.NO });
     this.refEnDb?.setPassHash(singleHash);
     if (docs.length > 0) {
       await this.db.bulkDocs(docs);

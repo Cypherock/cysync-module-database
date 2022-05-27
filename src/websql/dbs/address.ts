@@ -6,7 +6,7 @@ import Address from '../models/address';
  */
 export class AddressDB extends Database<Address> {
   constructor() {
-    super('address', {databaseVersion: 'v1'});
+    super('address', { databaseVersion: 'v1' });
   }
   public async insert(doc: Address) {
     doc._id = doc.address + doc.walletId;

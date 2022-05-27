@@ -1,7 +1,7 @@
 import { Database } from '../module/database';
 import Coin from '../models/coin';
 import { PassEncrypt } from '.';
-import { ISENCRYPTED } from '../models/model';
+import { IS_ENCRYPTED } from '../models/model';
 
 /**
  * CoinDB stores the native currency(coin) of a network.
@@ -16,7 +16,7 @@ export class CoinDB extends Database<Coin> {
 
   public async insert(coin: Coin) {
     coin._id = coin.slug + coin.walletId;
-    coin.isEncrypted = ISENCRYPTED.NO;
+    coin.isEncrypted = IS_ENCRYPTED.NO;
     await super.insert(coin);
   }
 
