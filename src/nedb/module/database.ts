@@ -2,7 +2,7 @@ import DataStore from 'nedb';
 import { EventEmitter } from 'events';
 
 import NedbPromise from './nedbPromise';
-import PassEncrypt from './../dbs/passHash';
+import PassEncrypt from '../../websql/dbs/passHash';
 /**
  * abstract class to initiate the database.
  */

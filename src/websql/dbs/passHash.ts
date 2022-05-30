@@ -1,12 +1,18 @@
 import aesjs from 'aes-js';
-import { DatabaseError, DatabaseErrorType } from '../errors';
+import { DatabaseError, DatabaseErrorType } from '../../errors';
 import crypto from 'crypto';
+
+/**
+ * PassEncrypt is an in-memory database util that stores the idHash and offers crypto functions.
+ * The class is initialised with a unique identifier using which the idHash is generated.
+ * It uses SHA256 algorithm.
+ */
 export default class PassEncrypt {
   private passHash: Uint8Array = new Uint8Array(32);
   private idHash: string = '';
   private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
     new aesjs.ModeOfOperation.ctr(this.passHash);
-  private passSet: boolean = false;
+  public passSet: boolean = false;
 
   constructor(idIn: string) {
     if (idIn === undefined) {

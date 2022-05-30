@@ -1,7 +1,7 @@
 import Service from '../module/database';
 import Xpub, { XpubBalance } from '../models/xpub';
-import PassEncrypt from './passHash';
-import { DatabaseError, DatabaseErrorType } from '../errors';
+import PassEncrypt from '../../websql/dbs/passHash';
+import { DatabaseError, DatabaseErrorType } from '../../errors';
 /**
  * Class for the Xpubs database. This db stores all the xpubs with their last updated balances and their corresponding
  * wallet ID and coin type. This class also emits "insert", "delete", and "update" events in case of these operations.

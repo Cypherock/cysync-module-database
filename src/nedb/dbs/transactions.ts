@@ -4,7 +4,7 @@ import { utils } from 'ethers';
 import Service from '../module/database';
 import Transaction, { InputOutput, SentReceive } from '../models/transaction';
 import AddressDB from './address';
-import logger from '../utils/logger';
+import logger from '../../utils/logger';
 
 const isBtcFork = (coinStr: string) => {
   const coin = ALLCOINS[coinStr.toLowerCase()];
