@@ -756,7 +756,7 @@
 "@types/websql@^0.0.27":
   version "0.0.27"
   resolved "https://registry.yarnpkg.com/@types/websql/-/websql-0.0.27.tgz#621a666a7f02018e7cbb4abab956a25736c27d71"
-  integrity sha1-Yhpman8CAY58u0q6uVaiVzbCfXE=
+  integrity sha512-bmJkLrp/S1G1m/MEcCFuRYjSpgFIWt1KoglSw4D9i3veQBR6v0BYFmp7snK1u3ri53AFdLaRR8qwIsOzw1h8LA==
 
 abort-controller@3.0.0:
   version "3.0.0"
