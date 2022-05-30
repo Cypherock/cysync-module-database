@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@cypherock/communication": "3.0.1-beta.16",
-    "@cypherock/server-wrapper": "1.0.1-beta.11",
     "@types/bignumber.js": "^5.0.0",
     "aes-js": "^3.1.2",
     "bignumber.js": "^9.0.2",

@@ -1,4 +1,4 @@
-import { notification as NotificationServer } from '@cypherock/server-wrapper';
+// import { notification as NotificationServer } from '@cypherock/server-wrapper';
 import Service from '../module/database';
 import Notification from '../models/notification';
 
@@ -61,49 +61,41 @@ export default class NotificationDB extends Service<Notification> {
 
     // Fetch from server if data is not syncronized.
     if (!isInDb) {
-      const res = await NotificationServer.get(last.dbId, items).request();
-      let serverLatestNotif = [];
-      let hasNext: boolean = false;
-
-      if (res.data.notifications) {
-        serverLatestNotif = res.data.notifications;
-        hasNext = res.data.hasNext;
-      }
-
-      const notifications = [];
-      let prevNotif: Notification | undefined;
-      for (const notifData of serverLatestNotif) {
-        const notif: Notification = {
-          dbId: notifData._id,
-          title: notifData.title,
-          description: notifData.description,
-          type: notifData.type,
-          createdAt: new Date(notifData.createdAt),
-          isRead: false
-        };
-
-        if (prevNotif) {
-          notif.prevDbId = prevNotif.dbId;
-        } else if (last) {
-          notif.prevDbId = last.dbId;
-        }
-
-        prevNotif = notif;
-
-        notifications.push(notif);
-
-        const alreadyPresent = await this.db.find({ dbId: notif.dbId }).exec();
-
-        if (alreadyPresent.length === 0) {
-          await this.db.update(
-            { dbId: notif.dbId },
-            this.createdDBObject(notif),
-            { upsert: true }
-          );
-        }
-      }
-
-      return { notifications, hasNext };
+      // const res = await NotificationServer.get(last.dbId, items).request();
+      // let serverLatestNotif = [];
+      // let hasNext: boolean = false;
+      // if (res.data.notifications) {
+      //   serverLatestNotif = res.data.notifications;
+      //   hasNext = res.data.hasNext;
+      // }
+      // const notifications = [];
+      // let prevNotif: Notification | undefined;
+      // for (const notifData of serverLatestNotif) {
+      //   const notif: Notification = {
+      //     dbId: notifData._id,
+      //     title: notifData.title,
+      //     description: notifData.description,
+      //     type: notifData.type,
+      //     createdAt: new Date(notifData.createdAt),
+      //     isRead: false
+      //   };
+      //   if (prevNotif) {
+      //     notif.prevDbId = prevNotif.dbId;
+      //   } else if (last) {
+      //     notif.prevDbId = last.dbId;
+      //   }
+      //   prevNotif = notif;
+      //   notifications.push(notif);
+      //   const alreadyPresent = await this.db.find({ dbId: notif.dbId }).exec();
+      //   if (alreadyPresent.length === 0) {
+      //     await this.db.update(
+      //       { dbId: notif.dbId },
+      //       this.createdDBObject(notif),
+      //       { upsert: true }
+      //     );
+      //   }
+      // }
+      // return { notifications, hasNext };
     } else {
       // If data is from database then always show `hasNext` to allow user to
       // check from server at the end of the list.
@@ -120,73 +112,73 @@ export default class NotificationDB extends Service<Notification> {
    * @return promise that resolves to a list of notifications
    */
   public async getLatest(items: number = 3) {
-    const dbNotif = await this.db
-      .find({})
-      .sort({ createdAt: -1 })
-      .limit(items)
-      .exec();
+    // const dbNotif = await this.db
+    //   .find({})
+    //   .sort({ createdAt: -1 })
+    //   .limit(items)
+    //   .exec();
 
-    const res = await NotificationServer.get(undefined, items).request();
-    let serverLatestNotif = [];
-    let hasNext = false;
-    let hasUnread = false;
+    // const res = await NotificationServer.get(undefined, items).request();
+    // let serverLatestNotif = [];
+    const hasNext = false;
+    const hasUnread = false;
 
-    if (res.data.notifications) {
-      serverLatestNotif = res.data.notifications;
-      hasNext = res.data.hasNext;
-    }
+    // if (res.data.notifications) {
+    //   serverLatestNotif = res.data.notifications;
+    //   hasNext = res.data.hasNext;
+    // }
 
-    let prevNotif: Notification | undefined;
-    for (const notifData of serverLatestNotif) {
-      const notif: Notification = {
-        dbId: notifData._id,
-        title: notifData.title,
-        description: notifData.description,
-        type: notifData.type,
-        createdAt: new Date(notifData.createdAt),
-        isRead: false
-      };
+    // let prevNotif: Notification | undefined;
+    // for (const notifData of serverLatestNotif) {
+    //   const notif: Notification = {
+    //     dbId: notifData._id,
+    //     title: notifData.title,
+    //     description: notifData.description,
+    //     type: notifData.type,
+    //     createdAt: new Date(notifData.createdAt),
+    //     isRead: false
+    //   };
 
-      if (prevNotif) {
-        notif.prevDbId = prevNotif.dbId;
-      }
+    //   if (prevNotif) {
+    //     notif.prevDbId = prevNotif.dbId;
+    //   }
 
-      prevNotif = notif;
+    //   prevNotif = notif;
 
-      const isInDb = await this.db.find({ dbId: notif.dbId }).exec();
+    //   const isInDb = await this.db.find({ dbId: notif.dbId }).exec();
 
-      if (isInDb.length === 0) {
-        await this.db.update(
-          { dbId: notifData._id },
-          this.createdDBObject(notif),
-          { upsert: true }
-        );
-      }
-    }
+    //   if (isInDb.length === 0) {
+    //     await this.db.update(
+    //       { dbId: notifData._id },
+    //       this.createdDBObject(notif),
+    //       { upsert: true }
+    //     );
+    //   }
+    // }
 
-    // Has new notifications if lengths are different
-    if (dbNotif.length < serverLatestNotif.length) {
-      hasUnread = true;
-    }
+    // // Has new notifications if lengths are different
+    // if (dbNotif.length < serverLatestNotif.length) {
+    //   hasUnread = true;
+    // }
 
-    // Has new notifications if first notifications are different
-    if (
-      !hasUnread &&
-      dbNotif.length > 0 &&
-      serverLatestNotif.length > 0 &&
-      dbNotif[0].dbId !== serverLatestNotif[0]._id
-    ) {
-      hasUnread = true;
-    }
+    // // Has new notifications if first notifications are different
+    // if (
+    //   !hasUnread &&
+    //   dbNotif.length > 0 &&
+    //   serverLatestNotif.length > 0 &&
+    //   dbNotif[0].dbId !== serverLatestNotif[0]._id
+    // ) {
+    //   hasUnread = true;
+    // }
 
-    if (!hasUnread) {
-      for (const notif of dbNotif) {
-        if (!notif.isRead) {
-          hasUnread = true;
-          break;
-        }
-      }
-    }
+    // if (!hasUnread) {
+    //   for (const notif of dbNotif) {
+    //     if (!notif.isRead) {
+    //       hasUnread = true;
+    //       break;
+    //     }
+    //   }
+    // }
 
     return {
       notifications: await this.db
