@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs';
-import logger from '../../utils/logger';
 import PouchDB from 'pouchdb';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
@@ -35,8 +34,7 @@ export abstract class Database<T> {
     this.refEnDb = enDb;
     this.databaseVersion = databaseVersion;
     this.db = new PouchDB<T>(table, {
-      adapter: 'websql',
-      auto_compaction: true
+      adapter: 'websql'
     });
     if (indexedFields)
       indexedFields.forEach(async field => {
@@ -99,7 +97,7 @@ export abstract class Database<T> {
   }
 
   /**
-   * 
+   *
    * Update the document based on the unique fields if already present
    * or else create a new document
    */
@@ -192,14 +190,23 @@ export abstract class Database<T> {
         throw new Error(
           `Couldn't find index for the provided sorting field ${sorting.field}`
         );
-      return (
-        await this.db.find({
-          selector: dbQuery,
-          limit: sorting.limit || -1,
-          use_index: this.fieldIndexMap.get(sorting.field),
-          sort: [{ [sorting.field]: sorting.order }]
-        })
-      ).docs;
+      if (sorting.limit)
+        return (
+          await this.db.find({
+            selector: dbQuery,
+            limit: sorting.limit,
+            use_index: this.fieldIndexMap.get(sorting.field),
+            sort: [{ [sorting.field]: sorting.order }]
+          })
+        ).docs;
+      else
+        return (
+          await this.db.find({
+            selector: dbQuery,
+            use_index: this.fieldIndexMap.get(sorting.field),
+            sort: [{ [sorting.field]: sorting.order }]
+          })
+        ).docs;
     }
     return (await this.db.find({ selector: dbQuery })).docs;
   }
