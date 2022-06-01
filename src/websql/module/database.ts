@@ -87,9 +87,16 @@ export abstract class Database<T> {
     this.emitter.emit(event, payload);
   }
 
+  public createdDBObject(obj: T) {
+    return {
+      ...obj,
+      databaseVersion: this.databaseVersion
+    };
+  }
+
   public async insert(doc: T) {
     try {
-      await this.db.put(doc, { force: true });
+      await this.db.put(this.createdDBObject(doc), { force: true });
     } catch (e) {
       logger.error('insert error', e);
     }
@@ -97,7 +104,8 @@ export abstract class Database<T> {
   }
 
   public async insertMany(docs: T[]) {
-    await this.db.bulkDocs(docs);
+    const docsObjects = docs.map(doc => this.createdDBObject(doc));
+    await this.db.bulkDocs(docsObjects);
     this.emit('insert');
   }
 
@@ -200,10 +208,7 @@ export abstract class Database<T> {
     if (this.databaseVersion) {
       const incompatibaleData = await this.db.find({
         selector: {
-          $or: [
-            { databaseVersion: { $ne: this.databaseVersion } },
-            { databaseVersion: { $exists: false } }
-          ]
+          databaseVersion: { $ne: this.databaseVersion }
         }
       });
 
