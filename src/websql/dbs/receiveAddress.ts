@@ -10,7 +10,7 @@ export class ReceiveAddressDB extends Database<ReceiveAddress> {
   }
 
   public async insert(doc: ReceiveAddress) {
-    doc._id = this.buildIndexString(doc.address, doc.walletId);
+    doc._id = this.buildIndexString(doc.coinType, doc.walletId);
     await super.insert(doc);
   }
 }
