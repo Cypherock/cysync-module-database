@@ -20,6 +20,6 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
    */
   public async insert(priceHistory: PriceHistory) {
     priceHistory._id = priceHistory.slug + priceHistory.interval;
-    await this.db.put(priceHistory);
+    await super.insert(priceHistory);
   }
 }
