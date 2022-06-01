@@ -20,6 +20,7 @@ export abstract class Database<T> {
    */
   protected secretFields = [''];
   private fieldIndexMap = new Map<string, string>();
+  protected indexedFields = [''];
 
   constructor(
     table: string,
@@ -33,19 +34,11 @@ export abstract class Database<T> {
     this.table = table;
     this.refEnDb = enDb;
     this.databaseVersion = databaseVersion;
+    if (indexedFields) this.indexedFields = indexedFields;
     this.db = new PouchDB<T>(table, {
-      adapter: 'websql'
+      adapter: 'websql',
+      auto_compaction: true,
     });
-    if (indexedFields)
-      indexedFields.forEach(async field => {
-        const response = await this.db.createIndex({
-          index: {
-            name: `idx-${field}`,
-            fields: [field]
-          }
-        });
-        this.fieldIndexMap.set(field, (response as any).id);
-      });
     this.db.transform({
       incoming: (doc: any) => {
         if (
@@ -83,6 +76,23 @@ export abstract class Database<T> {
    */
   public emit(event: string, payload?: any) {
     this.emitter.emit(event, payload);
+  }
+
+  /**
+   * Loads the data from the database. To be used before any other operation.
+   */
+  public async intialise() {
+    await Promise.all(
+      this.indexedFields.map(async field => {
+        const response = await this.db.createIndex({
+          index: {
+            name: `idx-${field}`,
+            fields: [field]
+          }
+        });
+        this.fieldIndexMap.set(field, (response as any).id);
+      })
+    );
   }
 
   private createdDBObject(obj: T) {
