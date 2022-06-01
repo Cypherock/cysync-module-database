@@ -98,11 +98,23 @@ export abstract class Database<T> {
     return `idx-${fields.map(field => `${field}`).join('/')}`;
   }
 
+  /**
+   * 
+   * Update the document based on the unique fields if already present
+   * or else create a new document
+   */
   public async insert(doc: T) {
     try {
-      await this.db.put(this.createdDBObject(doc), { force: true });
-    } catch (e) {
-      logger.error('insert error', e);
+      const existingDoc = await this.db.get((doc as any)._id);
+      const updatedDoc = {
+        ...existingDoc,
+        ...doc
+      };
+      await this.db.put(updatedDoc);
+    } catch (e: any) {
+      if (e.status === 404) {
+        await this.db.put(this.createdDBObject(doc));
+      }
     }
     this.emit('insert');
   }
