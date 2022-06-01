@@ -19,7 +19,10 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
    * Inserts a new price to the database.
    */
   public async insert(priceHistory: PriceHistory) {
-    priceHistory._id = priceHistory.slug + priceHistory.interval;
+    priceHistory._id = this.buildIndexString(
+      priceHistory.slug,
+      priceHistory.interval
+    );
     await super.insert(priceHistory);
   }
 }
