@@ -19,13 +19,7 @@ export class TransactionDB extends Database<Transaction> {
   }
 
   public async insert(txn: Transaction) {
-    txn._id = this.buildIndexString(
-      txn.walletId,
-      txn.hash,
-      txn.slug,
-      txn.sentReceive,
-      txn.status
-    );
+    txn._id = this.buildIndexString(txn.walletId, txn.hash, txn.slug);
     await super.insert(txn);
   }
 

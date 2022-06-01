@@ -9,6 +9,11 @@ export class DeviceDB extends Database<Device> {
     super('device', { databaseVersion: 'v1' });
   }
 
+  public async insert(device: Device) {
+    device._id = this.buildIndexString(device.serial);
+    await super.insert(device);
+  }
+
   public async getBySerial(serial: string) {
     const res = await this.db.find({ selector: { serial } });
     if (res.docs.length === 0) {

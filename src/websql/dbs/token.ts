@@ -13,7 +13,7 @@ export class TokenDB extends Database<Token> {
   }
 
   public async insert(token: Token): Promise<void> {
-    token._id = this.buildIndexString(token.slug, token.walletId);
+    token._id = this.buildIndexString(token.slug, token.coin, token.walletId);
     await super.insert(token);
   }
 
