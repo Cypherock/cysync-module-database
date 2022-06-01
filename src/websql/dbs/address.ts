@@ -9,7 +9,7 @@ export class AddressDB extends Database<Address> {
     super('address', { databaseVersion: 'v1' });
   }
   public async insert(doc: Address) {
-    doc._id = doc.address + doc.walletId;
+    doc._id = this.buildIndexString(doc.address, doc.walletId);
     await super.insert(doc);
   }
   /**

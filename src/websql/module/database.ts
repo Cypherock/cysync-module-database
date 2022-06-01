@@ -87,11 +87,15 @@ export abstract class Database<T> {
     this.emitter.emit(event, payload);
   }
 
-  public createdDBObject(obj: T) {
+  private createdDBObject(obj: T) {
     return {
       ...obj,
       databaseVersion: this.databaseVersion
     };
+  }
+
+  protected buildIndexString(...fields: any[]) {
+    return `idx-${fields.map(field => `${field}`).join('/')}`;
   }
 
   public async insert(doc: T) {
