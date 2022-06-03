@@ -176,8 +176,11 @@ export abstract class Database<T> {
 
   public async delete(query: Partial<T>) {
     const res = await this.db.find({ selector: query });
-    const docs = res.docs;
-    await Promise.all(docs.map(doc => this.db.remove(doc)));
+    const docs = res.docs.map(doc => ({
+      ...doc,
+      _deleted: true
+    }));
+    await this.db.bulkDocs(docs);
     this.emit('delete');
   }
 
