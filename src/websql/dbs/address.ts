@@ -8,7 +8,7 @@ export class AddressDB extends Database<Address> {
   constructor() {
     super('address', {
       databaseVersion: 'v1',
-      indexedFields: ['walletId', 'slug', 'address']
+      indexedFields: ['walletId', 'slug']
     });
   }
   public async insert(doc: Address) {

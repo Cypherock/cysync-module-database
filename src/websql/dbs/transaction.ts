@@ -14,7 +14,7 @@ export class TransactionDB extends Database<Transaction> {
   constructor() {
     super('transactions', {
       databaseVersion: 'v1',
-      indexedFields: ['confirmed', 'blockHeight', 'walletId', 'slug', 'hash']
+      indexedFields: ['confirmed', 'blockHeight', 'walletId', 'slug']
     });
   }
 
