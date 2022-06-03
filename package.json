@@ -45,6 +45,7 @@
     "events": "^3.3.0",
     "nedb": "^1.8.0",
     "pouchdb": "^7.3.0",
+    "pouchdb-adapter-memory": "^7.3.0",
     "pouchdb-adapter-websql": "^7.0.0",
     "pouchdb-find": "^7.3.0",
     "transform-pouch": "^2.0.0",

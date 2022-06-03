@@ -2,10 +2,12 @@ import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs';
 import PouchDB from 'pouchdb';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
+import PouchDBMemoryAdapter from 'pouchdb-adapter-memory';
 import PouchFind from 'pouchdb-find';
 import PouchTransform from 'transform-pouch';
 import IModel, { IS_ENCRYPTED } from '../models/model';
 PouchDB.plugin(PouchDBWebSQLAdapter);
+PouchDB.plugin(PouchDBMemoryAdapter);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
 
@@ -181,6 +183,25 @@ export abstract class Database<T> {
       _deleted: true
     }));
     await this.db.bulkDocs(docs);
+    this.emit('delete');
+  }
+
+  protected async deleteTruly(query: Partial<T>) {
+    const res = await this.db.find({ selector: query });
+    const docs = res.docs.map(doc => ({
+      ...doc,
+      _deleted: true
+    }));
+    await this.db.bulkDocs(docs);
+
+    const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
+    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
+    await this.db.replicate.to(tempDB, { filter: deleteFilter });
+    await this.db.destroy();
+    this.db = new PouchDB(this.table, { adapter: 'websql' });
+    await this.db.replicate.from(tempDB);
+    tempDB.destroy();
+
     this.emit('delete');
   }
 

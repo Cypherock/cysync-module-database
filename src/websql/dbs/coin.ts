@@ -56,4 +56,8 @@ export class CoinDB extends Database<Coin> {
       { totalBalance, totalUnconfirmedBalance }
     );
   }
+
+  public async delete(query: Partial<Coin>): Promise<void> {
+    await super.deleteTruly(query);
+  }
 }
