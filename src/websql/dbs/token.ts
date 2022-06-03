@@ -9,11 +9,11 @@ import Token from '../models/token';
  */
 export class TokenDB extends Database<Token> {
   constructor() {
-    super('token', { databaseVersion: 'v1' });
+    super('token', { databaseVersion: 'v1', indexedFields: ['walletId', 'slug', 'coin'] });
   }
 
   public async insert(token: Token): Promise<void> {
-    token._id = this.buildIndexString(token.slug, token.coin, token.walletId);
+    token._id = this.buildIndexString(token.walletId, token.coin, token.slug);
     await super.insert(token);
   }
 

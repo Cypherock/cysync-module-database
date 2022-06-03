@@ -6,10 +6,13 @@ import Address from '../models/address';
  */
 export class AddressDB extends Database<Address> {
   constructor() {
-    super('address', { databaseVersion: 'v1' });
+    super('address', {
+      databaseVersion: 'v1',
+      indexedFields: ['walletId', 'slug', 'address']
+    });
   }
   public async insert(doc: Address) {
-    doc._id = this.buildIndexString(doc.address, doc.walletId);
+    doc._id = this.buildIndexString(doc.walletId, doc.coinType);
     await super.insert(doc);
   }
   /**

@@ -10,7 +10,7 @@ import { IS_ENCRYPTED } from '../models/model';
  */
 export class CoinDB extends Database<Coin> {
   constructor(enDb?: PassEncrypt) {
-    super('coin', { databaseVersion: 'v1', enDb });
+    super('coin', { databaseVersion: 'v1', enDb, indexedFields:['walletId', 'slug'] });
     this.secretFields = ['xpub', 'zpub'];
   }
 

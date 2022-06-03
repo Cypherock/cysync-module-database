@@ -12,7 +12,7 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
    * (Could be cypherock server, or any other server)
    */
   constructor() {
-    super('priceHistory', { databaseVersion: 'v1' });
+    super('priceHistory', { databaseVersion: 'v1', indexedFields: ['slug'] });
   }
 
   /**
