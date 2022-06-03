@@ -155,18 +155,9 @@ export abstract class Database<T> {
   public async getAll(query?: Partial<T | IModel>) {
     if (query) {
       const resp = await this.db.find({ selector: query });
-      if (resp.warning) {
-        console.log(
-          this.table,
-          Object.keys(query),
-          resp,
-          await this.db.getIndexes()
-        );
-      }
       return resp.docs;
     }
     const resp = await this.db.find({ selector: { _id: { $gte: null } } });
-    console.log(this.table, 'nothing', resp);
     return resp.docs;
   }
 
@@ -251,7 +242,6 @@ export abstract class Database<T> {
           use_index: this.fieldIndexMap.get(sorting.field),
           sort: [{ [sorting.field]: sorting.order }]
         });
-        console.log('resp', resp);
         return resp.docs;
       }
     }
