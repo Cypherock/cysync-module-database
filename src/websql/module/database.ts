@@ -37,7 +37,7 @@ export abstract class Database<T> {
     if (indexedFields) this.indexedFields = indexedFields;
     this.db = new PouchDB<T>(table, {
       adapter: 'websql',
-      auto_compaction: true,
+      auto_compaction: true
     });
     this.db.transform({
       incoming: (doc: any) => {
