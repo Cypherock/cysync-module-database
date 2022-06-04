@@ -2,10 +2,12 @@ import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs';
 import PouchDB from 'pouchdb';
 import PouchDBMemoryAdapter from 'pouchdb-adapter-memory';
+import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
 import PouchTransform from 'transform-pouch';
 import IModel, { IS_ENCRYPTED } from '../models/model';
 PouchDB.plugin(PouchDBMemoryAdapter);
+PouchDB.plugin(PouchDBWebSQLAdapter);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
 
