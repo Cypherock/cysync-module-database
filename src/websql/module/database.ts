@@ -154,11 +154,9 @@ export abstract class Database<T> {
 
   public async getAll(query?: Partial<T | IModel>) {
     if (query) {
-      const resp = await this.db.find({ selector: query });
-      return resp.docs;
+      return (await this.db.find({ selector: query })).docs;
     }
-    const resp = await this.db.find({ selector: { _id: { $gte: null } } });
-    return resp.docs;
+    return (await this.db.find({ selector: { _id: { $gte: null } } })).docs;
   }
 
   public async findAndUpdate(query: Partial<T>, doc: Partial<T>) {

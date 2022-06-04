@@ -9,7 +9,10 @@ import Token from '../models/token';
  */
 export class TokenDB extends Database<Token> {
   constructor() {
-    super('token', { databaseVersion: 'v1', indexedFields: ['walletId', 'slug', 'coin'] });
+    super('token', {
+      databaseVersion: 'v1',
+      indexedFields: ['walletId', 'slug', 'coin']
+    });
   }
 
   public async insert(token: Token): Promise<void> {
