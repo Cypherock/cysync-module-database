@@ -196,13 +196,7 @@ export abstract class Database<T> {
     await this.db.bulkDocs(docs);
 
     const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
-    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
-    await this.db.replicate.to(tempDB, { filter: deleteFilter });
-    await this.db.destroy();
-    this.db = new PouchDB(this.table, { adapter: POUCHDB_ADAPTER });
-    await this.db.replicate.from(tempDB);
-    tempDB.destroy();
-
+    await this.syncAndResync(undefined, deleteFilter);
     this.emit('delete');
   }
 
@@ -246,24 +240,31 @@ export abstract class Database<T> {
     return (await this.db.find({ selector: dbQuery })).docs;
   }
 
-  public async encryptSecrets(singleHash: string): Promise<void> {
+  private async syncAndResync(
+    runner?: () => Promise<void>,
+    filter?: PouchDB.Replication.ReplicateOptions['filter']
+  ) {
     const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
-    await this.db.replicate.to(tempDB);
+    await this.db.replicate.to(tempDB, { filter: filter });
     await this.db.destroy();
+
+    if (runner) await runner();
+
     this.db = new PouchDB(this.table, { adapter: POUCHDB_ADAPTER });
-    this.refEnDb?.setPassHash(singleHash);
     await this.db.replicate.from(tempDB);
     tempDB.destroy();
   }
 
+  public async encryptSecrets(singleHash: string): Promise<void> {
+    await this.syncAndResync(async () => {
+      this.refEnDb?.setPassHash(singleHash);
+    });
+  }
+
   public async decryptSecrets(): Promise<void> {
-    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
-    await this.db.replicate.to(tempDB);
-    await this.db.destroy();
-    this.db = new PouchDB(this.table, { adapter:  });
-    this.refEnDb?.destroyHash();
-    await this.db.replicate.from(tempDB);
-    tempDB.destroy();
+    await this.syncAndResync(async () => {
+      this.refEnDb?.destroyHash();
+    });
   }
 
   public async hasIncompatableData() {
