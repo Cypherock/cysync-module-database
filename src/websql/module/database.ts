@@ -1,15 +1,15 @@
 import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs';
 import PouchDB from 'pouchdb';
-import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchDBMemoryAdapter from 'pouchdb-adapter-memory';
 import PouchFind from 'pouchdb-find';
 import PouchTransform from 'transform-pouch';
 import IModel, { IS_ENCRYPTED } from '../models/model';
-PouchDB.plugin(PouchDBWebSQLAdapter);
 PouchDB.plugin(PouchDBMemoryAdapter);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
+
+const POUCHDB_ADAPTER = 'websql';
 
 export abstract class Database<T> {
   protected table: string;
@@ -38,7 +38,7 @@ export abstract class Database<T> {
     this.databaseVersion = databaseVersion;
     if (indexedFields) this.indexedFields = indexedFields;
     this.db = new PouchDB<T>(table, {
-      adapter: 'websql',
+      adapter: POUCHDB_ADAPTER,
       auto_compaction: true,
       revs_limit: 1
     });
@@ -199,7 +199,7 @@ export abstract class Database<T> {
     const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
     await this.db.replicate.to(tempDB, { filter: deleteFilter });
     await this.db.destroy();
-    this.db = new PouchDB(this.table, { adapter: 'websql' });
+    this.db = new PouchDB(this.table, { adapter: POUCHDB_ADAPTER });
     await this.db.replicate.from(tempDB);
     tempDB.destroy();
 
@@ -247,19 +247,23 @@ export abstract class Database<T> {
   }
 
   public async encryptSecrets(singleHash: string): Promise<void> {
-    const docs = await this.getAll({ isEncrypted: IS_ENCRYPTED.NO });
+    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
+    await this.db.replicate.to(tempDB);
+    await this.db.destroy();
+    this.db = new PouchDB(this.table, { adapter: POUCHDB_ADAPTER });
     this.refEnDb?.setPassHash(singleHash);
-    if (docs.length > 0) {
-      await this.db.bulkDocs(docs);
-    }
+    await this.db.replicate.from(tempDB);
+    tempDB.destroy();
   }
 
   public async decryptSecrets(): Promise<void> {
-    const docs = await this.getAll();
+    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
+    await this.db.replicate.to(tempDB);
+    await this.db.destroy();
+    this.db = new PouchDB(this.table, { adapter:  });
     this.refEnDb?.destroyHash();
-    if (docs.length > 0) {
-      await this.db.bulkDocs(docs);
-    }
+    await this.db.replicate.from(tempDB);
+    tempDB.destroy();
   }
 
   public async hasIncompatableData() {
