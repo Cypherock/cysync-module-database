@@ -1,14 +1,17 @@
 import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs';
-import logger from '../../utils/logger';
 import PouchDB from 'pouchdb';
+import PouchDBMemoryAdapter from 'pouchdb-adapter-memory';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
 import PouchTransform from 'transform-pouch';
 import IModel, { IS_ENCRYPTED } from '../models/model';
+PouchDB.plugin(PouchDBMemoryAdapter);
 PouchDB.plugin(PouchDBWebSQLAdapter);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
+
+const POUCHDB_ADAPTER = 'websql';
 
 export abstract class Database<T> {
   protected table: string;
@@ -21,6 +24,7 @@ export abstract class Database<T> {
    */
   protected secretFields = [''];
   private fieldIndexMap = new Map<string, string>();
+  protected indexedFields = [''];
 
   constructor(
     table: string,
@@ -34,20 +38,12 @@ export abstract class Database<T> {
     this.table = table;
     this.refEnDb = enDb;
     this.databaseVersion = databaseVersion;
+    if (indexedFields) this.indexedFields = indexedFields;
     this.db = new PouchDB<T>(table, {
-      adapter: 'websql',
-      auto_compaction: true
+      adapter: POUCHDB_ADAPTER,
+      auto_compaction: true,
+      revs_limit: 1
     });
-    if (indexedFields)
-      indexedFields.forEach(async field => {
-        const response = await this.db.createIndex({
-          index: {
-            name: `idx-${field}`,
-            fields: [field]
-          }
-        });
-        this.fieldIndexMap.set(field, (response as any).id);
-      });
     this.db.transform({
       incoming: (doc: any) => {
         if (
@@ -87,17 +83,58 @@ export abstract class Database<T> {
     this.emitter.emit(event, payload);
   }
 
+  /**
+   * Loads the data from the database. To be used before any other operation.
+   */
+  public async intialise() {
+    await Promise.all(
+      this.indexedFields.map(async field => {
+        const response = await this.db.createIndex({
+          index: {
+            name: `idx-${field}`,
+            fields: [field]
+          }
+        });
+        this.fieldIndexMap.set(field, (response as any).id);
+      })
+    );
+  }
+
+  private createdDBObject(obj: T) {
+    return {
+      ...obj,
+      databaseVersion: this.databaseVersion
+    };
+  }
+
+  protected buildIndexString(...fields: any[]) {
+    return `idx-${fields.map(field => `${field}`).join('/')}`;
+  }
+
+  /**
+   *
+   * Update the document based on the unique fields if already present
+   * or else create a new document
+   */
   public async insert(doc: T) {
     try {
-      await this.db.put(doc, { force: true });
-    } catch (e) {
-      logger.error('insert error', e);
+      const existingDoc = await this.db.get((doc as any)._id);
+      const updatedDoc = {
+        ...existingDoc,
+        ...doc
+      };
+      await this.db.put(updatedDoc);
+    } catch (e: any) {
+      if (e.status === 404) {
+        await this.db.put(this.createdDBObject(doc));
+      }
     }
     this.emit('insert');
   }
 
   public async insertMany(docs: T[]) {
-    await this.db.bulkDocs(docs);
+    const docsObjects = docs.map(doc => this.createdDBObject(doc));
+    await this.db.bulkDocs(docsObjects);
     this.emit('insert');
   }
 
@@ -144,8 +181,24 @@ export abstract class Database<T> {
 
   public async delete(query: Partial<T>) {
     const res = await this.db.find({ selector: query });
-    const docs = res.docs;
-    await Promise.all(docs.map(doc => this.db.remove(doc)));
+    const docs = res.docs.map(doc => ({
+      ...doc,
+      _deleted: true
+    }));
+    await this.db.bulkDocs(docs);
+    this.emit('delete');
+  }
+
+  protected async deleteTruly(query: Partial<T>) {
+    const res = await this.db.find({ selector: query });
+    const docs = res.docs.map(doc => ({
+      ...doc,
+      _deleted: true
+    }));
+    await this.db.bulkDocs(docs);
+
+    const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
+    await this.syncAndResync(undefined, deleteFilter);
     this.emit('delete');
   }
 
@@ -168,42 +221,67 @@ export abstract class Database<T> {
         throw new Error(
           `Couldn't find index for the provided sorting field ${sorting.field}`
         );
-      return (
-        await this.db.find({
+      if (sorting.limit)
+        return (
+          await this.db.find({
+            selector: dbQuery,
+            limit: sorting.limit,
+            use_index: this.fieldIndexMap.get(sorting.field),
+            sort: [{ [sorting.field]: sorting.order }]
+          })
+        ).docs;
+      else {
+        const resp = await this.db.find({
           selector: dbQuery,
-          limit: sorting.limit || -1,
           use_index: this.fieldIndexMap.get(sorting.field),
           sort: [{ [sorting.field]: sorting.order }]
-        })
-      ).docs;
+        });
+        return resp.docs;
+      }
     }
     return (await this.db.find({ selector: dbQuery })).docs;
   }
+  /**
+   * This function is to be to used whenever you want to either purge the database
+   *  and truly delete the documents
+   *
+   * @param runner - an optional function to run before the sync
+   * @param filter - an optional filter to apply to the sync
+   *
+   * @returns a promise that resolves when the sync is complete
+   */
+  private async syncAndResync(
+    runner?: () => Promise<void>,
+    filter?: PouchDB.Replication.ReplicateOptions['filter']
+  ) {
+    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
+    await this.db.replicate.to(tempDB, { filter });
+    await this.db.destroy();
+
+    if (runner) await runner();
+
+    this.db = new PouchDB(this.table, { adapter: POUCHDB_ADAPTER });
+    await this.db.replicate.from(tempDB);
+    tempDB.destroy();
+  }
 
   public async encryptSecrets(singleHash: string): Promise<void> {
-    const docs = await this.getAll({ isEncrypted: IS_ENCRYPTED.NO });
-    this.refEnDb?.setPassHash(singleHash);
-    if (docs.length > 0) {
-      await this.db.bulkDocs(docs);
-    }
+    await this.syncAndResync(async () => {
+      this.refEnDb?.setPassHash(singleHash);
+    });
   }
 
   public async decryptSecrets(): Promise<void> {
-    const docs = await this.getAll();
-    this.refEnDb?.destroyHash();
-    if (docs.length > 0) {
-      await this.db.bulkDocs(docs);
-    }
+    await this.syncAndResync(async () => {
+      this.refEnDb?.destroyHash();
+    });
   }
 
   public async hasIncompatableData() {
     if (this.databaseVersion) {
       const incompatibaleData = await this.db.find({
         selector: {
-          $or: [
-            { databaseVersion: { $ne: this.databaseVersion } },
-            { databaseVersion: { $exists: false } }
-          ]
+          databaseVersion: { $ne: this.databaseVersion }
         }
       });
 

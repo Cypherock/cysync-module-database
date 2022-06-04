@@ -12,14 +12,17 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
    * (Could be cypherock server, or any other server)
    */
   constructor() {
-    super('priceHistory', { databaseVersion: 'v1' });
+    super('priceHistory', { databaseVersion: 'v1', indexedFields: ['slug'] });
   }
 
   /**
    * Inserts a new price to the database.
    */
   public async insert(priceHistory: PriceHistory) {
-    priceHistory._id = priceHistory.slug + priceHistory.interval;
-    await this.db.put(priceHistory);
+    priceHistory._id = this.buildIndexString(
+      priceHistory.slug,
+      priceHistory.interval
+    );
+    await super.insert(priceHistory);
   }
 }

@@ -14,12 +14,12 @@ export class TransactionDB extends Database<Transaction> {
   constructor() {
     super('transactions', {
       databaseVersion: 'v1',
-      indexedFields: ['confirmed', 'blockHeight']
+      indexedFields: ['confirmed', 'blockHeight', 'walletId', 'slug']
     });
   }
 
   public async insert(txn: Transaction) {
-    txn._id = txn.walletId + txn.hash + txn.slug + txn.sentReceive;
+    txn._id = this.buildIndexString(txn.walletId, txn.slug, txn.hash);
     await super.insert(txn);
   }
 

@@ -10,12 +10,16 @@ import { IS_ENCRYPTED } from '../models/model';
  */
 export class CoinDB extends Database<Coin> {
   constructor(enDb?: PassEncrypt) {
-    super('coin', { databaseVersion: 'v1', enDb });
+    super('coin', {
+      databaseVersion: 'v1',
+      enDb,
+      indexedFields: ['walletId', 'slug']
+    });
     this.secretFields = ['xpub', 'zpub'];
   }
 
   public async insert(coin: Coin) {
-    coin._id = coin.slug + coin.walletId;
+    coin._id = this.buildIndexString(coin.slug, coin.walletId);
     coin.isEncrypted = IS_ENCRYPTED.NO;
     await super.insert(coin);
   }
@@ -55,5 +59,9 @@ export class CoinDB extends Database<Coin> {
       { xpub, slug },
       { totalBalance, totalUnconfirmedBalance }
     );
+  }
+
+  public async delete(query: Partial<Coin>): Promise<void> {
+    await super.deleteTruly(query);
   }
 }
