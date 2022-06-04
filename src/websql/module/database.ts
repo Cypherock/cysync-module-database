@@ -241,7 +241,15 @@ export abstract class Database<T> {
     }
     return (await this.db.find({ selector: dbQuery })).docs;
   }
-
+  /**
+   * This function is to be to used whenever you want to either purge the database
+   *  and truly delete the documents
+   * 
+   * @param runner - an optional function to run before the sync
+   * @param filter - an optional filter to apply to the sync
+   * 
+   * @returns a promise that resolves when the sync is complete
+   */
   private async syncAndResync(
     runner?: () => Promise<void>,
     filter?: PouchDB.Replication.ReplicateOptions['filter']
