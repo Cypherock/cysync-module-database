@@ -6,7 +6,10 @@ import ReceiveAddress from '../models/receiveAddress';
  */
 export class ReceiveAddressDB extends Database<ReceiveAddress> {
   constructor() {
-    super('receiveAddress', { databaseVersion: 'v1' , indexedFields: ['address']});
+    super('receiveAddress', {
+      databaseVersion: 'v1',
+      indexedFields: ['address']
+    });
   }
 
   public async insert(doc: ReceiveAddress) {

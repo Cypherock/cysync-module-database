@@ -244,10 +244,10 @@ export abstract class Database<T> {
   /**
    * This function is to be to used whenever you want to either purge the database
    *  and truly delete the documents
-   * 
+   *
    * @param runner - an optional function to run before the sync
    * @param filter - an optional filter to apply to the sync
-   * 
+   *
    * @returns a promise that resolves when the sync is complete
    */
   private async syncAndResync(
@@ -255,7 +255,7 @@ export abstract class Database<T> {
     filter?: PouchDB.Replication.ReplicateOptions['filter']
   ) {
     const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
-    await this.db.replicate.to(tempDB, { filter: filter });
+    await this.db.replicate.to(tempDB, { filter });
     await this.db.destroy();
 
     if (runner) await runner();
