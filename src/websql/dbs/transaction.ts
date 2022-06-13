@@ -1,7 +1,7 @@
 import { Database } from '../module/database';
 import Transaction from '../models/transaction';
 
-const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 24;
+const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 1;
 
 /**
  * TransactionDB stores the transactions data of all required blockchain transactions.
