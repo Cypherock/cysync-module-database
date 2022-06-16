@@ -1,5 +1,6 @@
 import { Database } from '../module/database';
 import Transaction from '../models/transaction';
+import { ALLCOINS } from '@cypherock/communication';
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 1;
 
@@ -27,7 +28,6 @@ export class TransactionDB extends Database<Transaction> {
    * Set all the pending txn waiting for confirmations to failure after specified time.
    */
   public async failExpiredTxn() {
-    // expire txns after 24 hours
     await this.db
       .find({
         selector: {
@@ -42,6 +42,52 @@ export class TransactionDB extends Database<Transaction> {
       .then(async results => {
         const updatedResults = results.docs.map(doc => {
           doc.status = 2;
+          return doc;
+        });
+        this.db.bulkDocs(updatedResults);
+      });
+  }
+  private isBtcFork(coinStr: string) {
+    const coin = ALLCOINS[coinStr.toLowerCase()];
+    if (!coin) {
+      throw new Error('Invalid coin');
+    }
+
+    return !coin.isEth && !coin.isErc20Token;
+  }
+  public async blockUTXOS(utxos: any[], slug: string, walletId: string) {
+    if (!this.isBtcFork(slug)) return;
+    await Promise.all(
+      utxos.map(async input => {
+        await this.findAndUpdate(
+          { hash: input.txId, slug: slug, walletId: walletId },
+          {
+            blocked: true,
+            blockedAt: new Date()
+          }
+        );
+      })
+    );
+  }
+
+  /**
+   * Set all the pending txn waiting for confirmations to failure after specified time.
+   */
+  public async releaseBlockedTxns(slug: string) {
+    if (!this.isBtcFork(slug)) return;
+    await this.db
+      .find({
+        selector: {
+          blocked: true,
+          blockedAt: {
+            $lt: new Date(Date.now() - 20 * 60 * 1000)
+          }
+        }
+      })
+      .then(async results => {
+        const updatedResults = results.docs.map(doc => {
+          doc.blocked = false;
+          doc.blockedAt = undefined;
           return doc;
         });
         this.db.bulkDocs(updatedResults);
