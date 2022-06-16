@@ -60,7 +60,7 @@ export class TransactionDB extends Database<Transaction> {
     await Promise.all(
       utxos.map(async input => {
         await this.findAndUpdate(
-          { hash: input.txId, slug: slug, walletId: walletId },
+          { hash: input.txId, slug, walletId },
           {
             blocked: true,
             blockedAt: new Date()
