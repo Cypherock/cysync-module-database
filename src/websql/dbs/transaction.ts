@@ -71,7 +71,7 @@ export class TransactionDB extends Database<Transaction> {
   }
 
   /**
-   * Set all the pending txn waiting for confirmations to failure after specified time.
+   * Release all blocked txns if the 20 minutes has passed since the blockage.
    */
   public async releaseBlockedTxns(slug: string) {
     if (!this.isBtcFork(slug)) return;
