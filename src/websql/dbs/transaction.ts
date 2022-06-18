@@ -59,13 +59,13 @@ export class TransactionDB extends Database<Transaction> {
     if (!this.isBtcFork(slug)) return;
     await Promise.all(
       utxos.map(async input => {
-        await this.findAndUpdate(
-          { hash: input.txId, slug, walletId },
-          {
-            blocked: true,
-            blockedAt: new Date()
-          }
-        );
+        const tx = await this.getOne({ hash: input.txId, slug, walletId });
+        if (tx) {
+          if (tx.blockedInputs === undefined) tx.blockedInputs = [];
+          tx.blockedInputs.push(input.vout);
+          tx.blockedAt = new Date();
+          await this.update(tx);
+        }
       })
     );
   }
@@ -78,7 +78,6 @@ export class TransactionDB extends Database<Transaction> {
     await this.db
       .find({
         selector: {
-          blocked: true,
           blockedAt: {
             $lt: new Date(Date.now() - 20 * 60 * 1000)
           }
@@ -86,7 +85,7 @@ export class TransactionDB extends Database<Transaction> {
       })
       .then(async results => {
         const updatedResults = results.docs.map(doc => {
-          doc.blocked = false;
+          doc.blockedInputs = undefined;
           doc.blockedAt = undefined;
           return doc;
         });
