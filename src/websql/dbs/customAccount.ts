@@ -35,15 +35,12 @@ export class CustomAccountDB extends Database<CustomAccount> {
 
   public async rebuild(data: CustomAccount[], query: Partial<CustomAccount>) {
     const res = await this.db.find({ selector: query });
-    console.log(res);
     const docs = res.docs.map(doc => ({
       ...doc,
       _deleted: true
     }));
-    console.log(docs);
     await this.db.bulkDocs(docs);
 
-    console.log(data);
     const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
     await this.syncAndResync(undefined, deleteFilter);
 
