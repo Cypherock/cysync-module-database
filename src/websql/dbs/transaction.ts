@@ -1,6 +1,6 @@
 import { Database } from '../module/database';
 import Transaction from '../models/transaction';
-import { ALLCOINS, coinGroup } from '@cypherock/communication';
+import { ALLCOINS, CoinGroup } from '@cypherock/communication';
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 1;
 
@@ -53,7 +53,7 @@ export class TransactionDB extends Database<Transaction> {
       throw new Error('Invalid coin');
     }
 
-    return coin.group === coinGroup.BitcoinForks;
+    return coin.group === CoinGroup.BitcoinForks;
   }
   public async blockUTXOS(utxos: any[], slug: string, walletId: string) {
     if (!this.isBtcFork(slug)) return;

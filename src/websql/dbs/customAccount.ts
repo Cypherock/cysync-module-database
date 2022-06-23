@@ -9,7 +9,7 @@ import CustomAccount from '../models/customAccount';
  */
 export class CustomAccountDB extends Database<CustomAccount> {
   constructor() {
-    super('token', {
+    super('customAccount', {
       databaseVersion: 'v1',
       indexedFields: ['walletId', 'name', 'coin']
     });
@@ -31,5 +31,24 @@ export class CustomAccountDB extends Database<CustomAccount> {
   }) {
     const { walletId, name, balance } = options;
     await this.findAndUpdate({ walletId, name }, { balance });
+  }
+
+  public async rebuild(data: CustomAccount[], query: Partial<CustomAccount>) {
+    const res = await this.db.find({ selector: query });
+    console.log(res);
+    const docs = res.docs.map(doc => ({
+      ...doc,
+      _deleted: true
+    }));
+    console.log(docs);
+    await this.db.bulkDocs(docs);
+
+    console.log(data);
+    const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
+    await this.syncAndResync(undefined, deleteFilter);
+
+    this.insertMany(data);
+
+    this.emit('update');
   }
 }
