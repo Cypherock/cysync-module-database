@@ -1,4 +1,4 @@
-import { ALLCOINS, CoinGroup, ERC20TOKENS } from '@cypherock/communication';
+import { ALLCOINS, CoinGroup, BtcCoinData } from '@cypherock/communication';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import Service from '../module/database';
@@ -452,10 +452,10 @@ export default class TransactionDB extends Service<Transaction> {
           return;
         }
 
-        if (!ERC20TOKENS[token]) {
-          logger.warn('Invalid tokenAbbr in transaction', { token });
-          return;
-        }
+        // if (!ERC20TOKENS[token]) {
+        //   logger.warn('Invalid tokenAbbr in transaction', { token });
+        //   return;
+        // }
 
         const feeTxn: Transaction = {
           hash: txn.hash,
@@ -536,7 +536,13 @@ export default class TransactionDB extends Service<Transaction> {
       }
     }
 
-    if (isBtcFork(coinType)) {
+    const coin = ALLCOINS[coinType.toLowerCase()];
+
+    if (!coin) {
+      throw new Error('Invalid coin');
+    }
+
+    if (coin instanceof BtcCoinData) {
       let myAddresses: string[] = [];
 
       if (addresses && addresses.length > 0) {
@@ -679,91 +685,9 @@ export default class TransactionDB extends Service<Transaction> {
       await this.insert(newTxn);
       this.emit('insert');
     } else {
-      // Derive address from Xpub (It'll always give a mixed case address with checksum)
-      const myAddress =
-        utils.HDNode.fromExtendedKey(xpub).derivePath(`0/0`).address;
-
-      const amount = new BigNumber(txn.value);
-      const fromAddr = txn.from;
-      const inputs: InputOutput[] = [
-        {
-          address: txn.from.toLowerCase(),
-          value: amount.toString(),
-          isMine: txn.from.toLowerCase() === myAddress.toLowerCase(),
-          index: 0
-        }
-      ];
-      const outputs: InputOutput[] = [
-        {
-          address: txn.to.toLowerCase(),
-          value: amount.toString(),
-          isMine: txn.to.toLowerCase() === myAddress.toLowerCase(),
-          index: 0
-        }
-      ];
-
-      let token: string | undefined;
-
-      const fees = new BigNumber(txn.gasUsed || txn.gas || 0).multipliedBy(
-        txn.gasPrice || 0
+      throw new Error(
+        'insertFromBlockbookTxn should be only used for BTC forks: ' + coinType
       );
-
-      if (txn.isErc20Token) {
-        token = txn.tokenAbbr;
-
-        if (!token) {
-          logger.warn('Token abbr is not present in ERC20 Transaction');
-          return;
-        }
-
-        if (!ERC20TOKENS[token]) {
-          logger.warn('Invalid tokenAbbr in transaction', { token });
-          return;
-        }
-
-        const feeTxn: Transaction = {
-          hash: txn.hash,
-          amount: fees.toString(),
-          fees: '0',
-          total: fees.toString(),
-          confirmations: txn.confirmations || 0,
-          walletId,
-          coin: coinType,
-          // 2 for failed, 1 for pass
-          status: txn.isError ? 2 : 1,
-          sentReceive: 'FEES',
-          confirmed: new Date(txn.timeStamp),
-          blockHeight: txn.blockNumber,
-          ethCoin: coinType,
-          inputs: [],
-          outputs: []
-        };
-
-        await this.insert(feeTxn);
-      }
-
-      const newTxn: Transaction = {
-        hash: txn.hash,
-        amount: amount.toString(),
-        fees: fees.toString(),
-        total: token ? amount.toString() : amount.plus(fees).toString(),
-        confirmations: txn.confirmations || 0,
-        walletId,
-        coin: token ? token : coinType,
-        // 2 for failed, 1 for pass
-        status: txn.isError ? 2 : 1,
-        sentReceive:
-          myAddress.toLowerCase() === fromAddr.toLowerCase()
-            ? 'SENT'
-            : 'RECEIVED',
-        confirmed: new Date(txn.timeStamp),
-        blockHeight: txn.blockNumber,
-        ethCoin: coinType,
-        inputs,
-        outputs
-      };
-
-      await this.insert(newTxn);
     }
   }
 
