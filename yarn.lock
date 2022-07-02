@@ -28,10 +28,10 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
-"@cypherock/communication@3.0.1-beta.17":
-  version "3.0.1-beta.17"
-  resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.17.tgz#725555a40e979951a2de684a80593827ba6b7113"
-  integrity sha512-c+jtzUpft4RhPjtyxX00uWNJKVR+p3aCtF2Vix9UXKsFWBnFkoz7AqxxApJNgeyNyUkvnyWqbWo+/dZzimOBbQ==
+"@cypherock/communication@3.0.1-beta.18":
+  version "3.0.1-beta.18"
+  resolved "https://registry.yarnpkg.com/@cypherock/communication/-/communication-3.0.1-beta.18.tgz#5b2c238a383278a5907e2882c2ab9d8b742000f9"
+  integrity sha512-gVJkeG+tYFNyNL7ppLpSa4HW/3WRKMmkbqo1yo40mMoU5pvrbR/1r/a35BnCUqlz+CPIIgy1mf9jOR0kY/lwKg==
   dependencies:
     serialport "10.0.0"
     uuid "^8.3.2"
