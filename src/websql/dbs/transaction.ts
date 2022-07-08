@@ -1,6 +1,6 @@
 import { Database } from '../module/database';
 import Transaction from '../models/transaction';
-import { ALLCOINS, CoinGroup } from '@cypherock/communication';
+import { COINS, CoinGroup } from '@cypherock/communication';
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 1;
 
@@ -48,7 +48,7 @@ export class TransactionDB extends Database<Transaction> {
       });
   }
   private isBtcFork(coinStr: string) {
-    const coin = ALLCOINS[coinStr.toLowerCase()];
+    const coin = COINS[coinStr.toLowerCase()];
     if (!coin) {
       throw new Error('Invalid coin');
     }

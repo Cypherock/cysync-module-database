@@ -1,4 +1,4 @@
-import { ALLCOINS, CoinGroup, BtcCoinData } from '@cypherock/communication';
+import { COINS, CoinGroup, BtcCoinData } from '@cypherock/communication';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import Service from '../module/database';
@@ -7,7 +7,7 @@ import AddressDB from './address';
 import logger from '../../utils/logger';
 
 const isBtcFork = (coinStr: string) => {
-  const coin = ALLCOINS[coinStr.toLowerCase()];
+  const coin = COINS[coinStr.toLowerCase()];
   if (!coin) {
     throw new Error('Invalid coin');
   }
@@ -536,7 +536,7 @@ export default class TransactionDB extends Service<Transaction> {
       }
     }
 
-    const coin = ALLCOINS[coinType.toLowerCase()];
+    const coin = COINS[coinType.toLowerCase()];
 
     if (!coin) {
       throw new Error('Invalid coin');
