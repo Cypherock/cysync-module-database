@@ -1,6 +1,6 @@
 {
   "name": "@cypherock/database",
-  "version": "3.0.1-beta.25",
+  "version": "3.0.1-beta.26",
   "description": "cypherock database wrapper",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,7 +31,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@cypherock/communication": "3.0.1-beta.19",
+    "@cypherock/communication": "3.0.1-beta.20",
     "@types/bignumber.js": "^5.0.0",
     "@types/pouchdb": "^6.4.0",
     "@types/pouchdb-adapter-websql": "^6.1.4",
