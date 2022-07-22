@@ -7,24 +7,22 @@ import Notification from '../models/notification';
  */
 export class NotificationDB extends Database<Notification> {
   constructor() {
-    super('notification', { databaseVersion: 'v1' });
+    super('notification', {
+      databaseVersion: 'v2',
+      indexedFields: ['createdAt']
+    });
   }
 
   public async insert(notification: Notification) {
-    notification._id = this.buildIndexString(notification._id);
     await super.insert(notification);
   }
 
   public async getLatest(items = 3, skip = 0) {
-    const res = await this.db.find({
-      selector: {
-        _id: { $gte: null }
-      },
-      sort: [{ _id: 'desc' }],
-      limit: items,
-      skip
-    });
-    return res.docs;
+    const res = await this.executeQuery(
+      { createdAt: { $gte: null } },
+      { field: 'createdAt', order: 'desc', limit: items, skip }
+    );
+    return res;
   }
 
   public async markAllAsRead() {
