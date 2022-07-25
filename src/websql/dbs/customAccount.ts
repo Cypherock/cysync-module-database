@@ -44,7 +44,7 @@ export class CustomAccountDB extends Database<CustomAccount> {
     const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
     await this.syncAndResync(undefined, deleteFilter);
 
-    this.insertMany(data);
+    await this.insertMany(data);
 
     this.emit('update');
   }
