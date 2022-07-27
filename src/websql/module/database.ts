@@ -253,7 +253,7 @@ export abstract class Database<T> {
    *
    * @returns a promise that resolves when the sync is complete
    */
-  private async syncAndResync(
+  protected async syncAndResync(
     runner?: () => Promise<void>,
     filter?: PouchDB.Replication.ReplicateOptions['filter']
   ) {
