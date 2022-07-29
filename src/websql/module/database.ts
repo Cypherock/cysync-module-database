@@ -23,7 +23,7 @@ export abstract class Database<T> {
    *  on setting password, these fields would be encrypted
    */
   protected secretFields = [''];
-  private fieldIndexMap = new Map<string, string>();
+  protected fieldIndexMap = new Map<string, string>();
   protected indexedFields = [''];
 
   constructor(
@@ -214,6 +214,7 @@ export abstract class Database<T> {
       field: string;
       order: 'asc' | 'desc';
       limit?: number;
+      skip?: number;
     }
   ) {
     if (sorting?.field) {
@@ -226,6 +227,7 @@ export abstract class Database<T> {
           await this.db.find({
             selector: dbQuery,
             limit: sorting.limit,
+            skip: sorting.skip || 0,
             use_index: this.fieldIndexMap.get(sorting.field),
             sort: [{ [sorting.field]: sorting.order }]
           })
@@ -234,6 +236,7 @@ export abstract class Database<T> {
         const resp = await this.db.find({
           selector: dbQuery,
           use_index: this.fieldIndexMap.get(sorting.field),
+          skip: sorting.skip || 0,
           sort: [{ [sorting.field]: sorting.order }]
         });
         return resp.docs;
@@ -250,7 +253,7 @@ export abstract class Database<T> {
    *
    * @returns a promise that resolves when the sync is complete
    */
-  private async syncAndResync(
+  protected async syncAndResync(
     runner?: () => Promise<void>,
     filter?: PouchDB.Replication.ReplicateOptions['filter']
   ) {
