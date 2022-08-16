@@ -50,7 +50,7 @@ export default interface ITransaction extends IModel {
   /**
    * Tx creation date is stored here first. Once its confirmed on the blockchain it will be updated.
    */
-  confirmed: Date;
+  confirmed: string;
   blockHeight: number;
   inputs?: InputOutput[];
   outputs?: InputOutput[];

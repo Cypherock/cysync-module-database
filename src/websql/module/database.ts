@@ -4,10 +4,12 @@ import PouchDB from 'pouchdb';
 import PouchDBMemoryAdapter from 'pouchdb-adapter-memory';
 import PouchDBWebSQLAdapter from 'pouchdb-adapter-websql';
 import PouchFind from 'pouchdb-find';
+import PouchUpsert from 'pouchdb-upsert';
 import PouchTransform from 'transform-pouch';
 import IModel, { IS_ENCRYPTED } from '../models/model';
 PouchDB.plugin(PouchDBMemoryAdapter);
 PouchDB.plugin(PouchDBWebSQLAdapter);
+PouchDB.plugin(PouchUpsert);
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(PouchTransform);
 
@@ -117,24 +119,19 @@ export abstract class Database<T> {
    * or else create a new document
    */
   public async insert(doc: T) {
-    try {
-      const existingDoc = await this.db.get((doc as any)._id);
-      const updatedDoc = {
-        ...existingDoc,
-        ...doc
-      };
-      await this.db.put(updatedDoc);
-    } catch (e: any) {
-      if (e.status === 404) {
-        await this.db.put(this.createdDBObject(doc));
-      }
-    }
+    const docId = (doc as any)._id;
+    await this.db.upsert(docId, () => this.createdDBObject(doc));
     this.emit('insert');
   }
 
   public async insertMany(docs: T[]) {
-    const docsObjects = docs.map(doc => this.createdDBObject(doc));
-    await this.db.bulkDocs(docsObjects);
+    const responses = await this.db.bulkDocs(docs);
+    await Promise.all(
+      responses.map((response, idx) => {
+        if (response.rev) return;
+        return this.insert(docs[idx]);
+      })
+    );
     this.emit('insert');
   }
 

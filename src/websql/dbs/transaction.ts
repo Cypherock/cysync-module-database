@@ -24,6 +24,16 @@ export class TransactionDB extends Database<Transaction> {
     await super.insert(txn);
   }
 
+  public async insertMany(docs: Transaction[]): Promise<void> {
+    await super.insertMany(
+      docs.map(txn => ({
+        ...txn,
+        databaseVersion: this.databaseVersion,
+        _id: this.buildIndexString(txn.walletId, txn.slug, txn.hash)
+      }))
+    );
+  }
+
   /**
    * Set all the pending txn waiting for confirmations to failure after specified time.
    */

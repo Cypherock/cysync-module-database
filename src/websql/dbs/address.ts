@@ -15,6 +15,15 @@ export class AddressDB extends Database<Address> {
     doc._id = this.buildIndexString(doc.walletId, doc.coinType);
     await super.insert(doc);
   }
+  public async insertMany(docs: Address[]): Promise<void> {
+    await super.insertMany(
+      docs.map(doc => ({
+        ...doc,
+        databaseVersion: this.databaseVersion,
+        _id: this.buildIndexString(doc.walletId, doc.coinType)
+      }))
+    );
+  }
   /**
    * returns a promise which resolves to chainIndex and addressIndex of the given address in the database.
    * If not found, returns null.
