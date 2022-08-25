@@ -12,6 +12,6 @@ export default interface Token extends IModel {
   slug: string;
   price: number;
   // stores the timestamp of the last price update in unix epoch time format
-  priceLastUpdatedAt:number;
+  priceLastUpdatedAt: number;
   balance: string;
 }

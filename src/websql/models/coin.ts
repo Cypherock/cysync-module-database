@@ -13,7 +13,7 @@ export default interface Coin extends IModel {
   slug: string;
   price: number;
   // stores the timestamp of the last price update in unix epoch time format
-  priceLastUpdatedAt:number;
+  priceLastUpdatedAt: number;
   xpub: string;
   zpub?: string;
   xpubBalance: string;
