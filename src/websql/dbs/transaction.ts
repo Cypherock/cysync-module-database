@@ -20,7 +20,12 @@ export class TransactionDB extends Database<Transaction> {
   }
 
   public async insert(txn: Transaction) {
-    txn._id = this.buildIndexString(txn.walletId, txn.slug, txn.hash);
+    txn._id = this.buildIndexString(
+      txn.walletId,
+      txn.slug,
+      txn.hash,
+      txn.customIdentifier
+    );
     await super.insert(txn);
   }
 
@@ -29,7 +34,12 @@ export class TransactionDB extends Database<Transaction> {
       docs.map(txn => ({
         ...txn,
         databaseVersion: this.databaseVersion,
-        _id: this.buildIndexString(txn.walletId, txn.slug, txn.hash)
+        _id: this.buildIndexString(
+          txn.walletId,
+          txn.slug,
+          txn.hash,
+          txn.customIdentifier
+        )
       }))
     );
   }
