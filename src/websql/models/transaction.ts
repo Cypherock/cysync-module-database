@@ -56,4 +56,5 @@ export default interface ITransaction extends IModel {
   outputs?: InputOutput[];
   blockedInputs?: number[];
   blockedAt?: Date;
+  customIdentifier?: string | undefined;
 }
