@@ -16,6 +16,8 @@
   "author": "Cypherock",
   "license": "AGPL-3.0",
   "devDependencies": {
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
     "@types/aes-js": "^3.1.1",
     "@types/nedb": "^1.8.12",
     "@types/node": "^17.0.15",
