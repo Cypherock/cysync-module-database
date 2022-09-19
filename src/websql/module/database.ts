@@ -125,11 +125,12 @@ export abstract class Database<T> {
   }
 
   public async insertMany(docs: T[]) {
-    const responses = await this.db.bulkDocs(docs);
+    const docsObjList = docs.map(elem => this.createdDBObject(elem));
+    const responses = await this.db.bulkDocs(docsObjList);
     await Promise.all(
       responses.map((response, idx) => {
         if (response.rev) return;
-        return this.insert(docs[idx]);
+        return this.insert(docsObjList[idx]);
       })
     );
     this.emit('insert');
