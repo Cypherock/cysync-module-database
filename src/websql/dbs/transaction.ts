@@ -14,7 +14,7 @@ export class TransactionDB extends Database<Transaction> {
   public counter = 0;
   constructor() {
     super('transactions', {
-      databaseVersion: 'v1',
+      databaseVersion: 'v2',
       indexedFields: ['confirmed', 'blockHeight', 'walletId', 'slug']
     });
   }
