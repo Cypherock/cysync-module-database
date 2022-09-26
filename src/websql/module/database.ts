@@ -183,7 +183,11 @@ export abstract class Database<T> {
       ...doc,
       _deleted: true
     }));
-    await this.db.bulkDocs(docs);
+
+    if (docs.length > 0) {
+      await this.db.bulkDocs(docs);
+    }
+
     this.emit('delete');
   }
 
@@ -193,10 +197,14 @@ export abstract class Database<T> {
       ...doc,
       _deleted: true
     }));
-    await this.db.bulkDocs(docs);
 
-    const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
-    await this.syncAndResync(undefined, deleteFilter);
+    if (docs.length > 0) {
+      await this.db.bulkDocs(docs);
+
+      const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
+      await this.syncAndResync(undefined, deleteFilter);
+    }
+
     this.emit('delete');
   }
 
