@@ -35,16 +35,39 @@ export class CustomAccountDB extends Database<CustomAccount> {
 
   public async rebuild(data: CustomAccount[], query: Partial<CustomAccount>) {
     const res = await this.db.find({ selector: query });
-    const docs = res.docs.map(doc => ({
-      ...doc,
-      _deleted: true
-    }));
+    const partialData = data.map(dataItem => {
+      return JSON.stringify({
+        name: dataItem.name,
+        coin: dataItem.coin,
+        walletId: dataItem.walletId
+      });
+    });
+    const duplicateIndices: number[] = [];
+    const filterItems = (item: any) => {
+      const partialItem = JSON.stringify({
+        name: item.name,
+        coin: item.coin,
+        walletId: item.walletId
+      });
+      const index = partialData.findIndex(value => value === partialItem);
+      if (index === -1) return true;
+      else {
+        duplicateIndices.push(index);
+        return false;
+      }
+    };
+
+    const docs = res.docs
+      .filter(item => filterItems(item))
+      .map(doc => ({
+        ...doc,
+        _deleted: true
+      }));
+
     await this.db.bulkDocs(docs);
-
-    const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
-    await this.syncAndResync(undefined, deleteFilter);
-
-    await this.insertMany(data);
+    await this.insertMany(
+      data.filter((_, index) => !duplicateIndices.includes(index))
+    );
 
     this.emit('update');
   }
