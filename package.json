@@ -1,6 +1,6 @@
 {
   "name": "@cypherock/database",
-  "version": "3.0.1-beta.37",
+  "version": "3.0.1-beta.38",
   "description": "cypherock database wrapper",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
