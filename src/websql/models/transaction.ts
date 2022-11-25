@@ -3,7 +3,8 @@ import IModel from './model';
 export enum Status {
   PENDING,
   SUCCESS,
-  FAILURE
+  FAILURE,
+  DISCARDED
 }
 
 export enum SentReceive {
