@@ -8,12 +8,12 @@ export class ReceiveAddressDB extends Database<ReceiveAddress> {
   constructor() {
     super('receiveAddress', {
       databaseVersion: 'v1',
-      indexedFields: ['address']
+      indexedFields: ['address', 'accountId']
     });
   }
 
   public async insert(doc: ReceiveAddress) {
-    doc._id = this.buildIndexString(doc.walletId, doc.coinType);
+    doc._id = Database.buildIndexString(doc.accountId);
     await super.insert(doc);
   }
 }

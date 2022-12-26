@@ -19,7 +19,7 @@ export class CoinDB extends Database<Coin> {
   }
 
   public async insert(coin: Coin) {
-    coin._id = this.buildIndexString(coin.slug, coin.walletId);
+    coin._id = Database.buildIndexString(coin.slug, coin.walletId);
     coin.isEncrypted = IS_ENCRYPTED.NO;
     await super.insert(coin);
   }

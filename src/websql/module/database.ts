@@ -109,7 +109,7 @@ export abstract class Database<T> {
     };
   }
 
-  protected buildIndexString(...fields: any[]) {
+  protected static buildIndexString(...fields: any[]) {
     return `idx-${fields.map(field => `${field}`).join('/')}`;
   }
 

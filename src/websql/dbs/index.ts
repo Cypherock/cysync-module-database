@@ -7,6 +7,8 @@ import { AddressDB } from './address';
 import { ReceiveAddressDB } from './receiveAddress';
 import { TransactionDB } from './transaction';
 import { NotificationDB } from './notification';
+import { AccountDB } from './account';
+import { CoinPriceDB } from './coinPrice';
 import PassEncrypt from './passHash';
 import PriceHistoryDB from './priceHistory';
 
@@ -21,5 +23,7 @@ export {
   TransactionDB,
   PassEncrypt,
   NotificationDB,
-  PriceHistoryDB
+  PriceHistoryDB,
+  AccountDB,
+  CoinPriceDB
 };

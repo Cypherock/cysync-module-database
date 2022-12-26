@@ -5,13 +5,13 @@ import IModel from './model';
  */
 export default interface Token extends IModel {
   walletId: string;
-  coin: string;
+  coinId: string;
+  parentCoinId: string;
+  accountId: string;
+  coin?: string;
   /**
    * Uniquer identifier for the token.
    */
   slug: string;
-  price: number;
-  // stores the timestamp of the last price update in unix epoch time format
-  priceLastUpdatedAt: number | undefined;
   balance: string;
 }

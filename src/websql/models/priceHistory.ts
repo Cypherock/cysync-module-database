@@ -7,6 +7,7 @@ enum INTERVAL {
 }
 
 export default interface IPriceHistory extends IModel {
+  coinId: string;
   /**
    * uniquer identifier for the asset.
    */
