@@ -55,10 +55,12 @@ export default interface ITransaction extends IModel {
    */
   walletName?: string;
   /**
+   * @deprecated
    * uniquer identifier of the crypto asset. Ex: ETH, BTC, USDT, etc.
    */
-  slug: string;
+  slug?: string;
   /**
+   * @deprecated
    * If it's a token transaction, then this would be the coin slug.
    * This is done so as to extend support to other crypto assets like NFTs automatically.
    */

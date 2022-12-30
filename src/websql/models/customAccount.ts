@@ -7,7 +7,10 @@ export default interface CustomAccount extends IModel {
   accountId: string;
   coinId: string;
   walletId: string;
-  coin: string;
+  /**
+   * @deprecated
+   */
+  coin?: string;
   /**
    * Uniquer identifier for the token.
    */

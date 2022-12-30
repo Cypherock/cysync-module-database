@@ -7,8 +7,8 @@ import ReceiveAddress from '../models/receiveAddress';
 export class ReceiveAddressDB extends Database<ReceiveAddress> {
   constructor() {
     super('receiveAddress', {
-      databaseVersion: 'v1',
-      indexedFields: ['address', 'accountId']
+      databaseVersion: 'v2',
+      indexedFields: ['address', 'accountId', 'coinId']
     });
   }
 

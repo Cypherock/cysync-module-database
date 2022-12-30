@@ -5,9 +5,10 @@ export default interface Account extends IModel {
   walletId: string;
   coinId: string;
   /**
+   * @deprecated
    * uniquer identifier for the coin.
    */
-  slug: string;
+  slug?: string;
   xpub: string;
   accountType?: string;
   accountIndex: number;

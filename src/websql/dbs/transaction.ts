@@ -13,12 +13,11 @@ export class TransactionDB extends Database<Transaction> {
   public counter = 0;
   constructor() {
     super('transactions', {
-      databaseVersion: 'v3',
+      databaseVersion: 'v4',
       indexedFields: [
         'confirmed',
         'blockHeight',
         'walletId',
-        'slug',
         'coinId',
         'parentCoinId',
         'accountId'
@@ -28,7 +27,6 @@ export class TransactionDB extends Database<Transaction> {
 
   private buildIndex(txn: Transaction) {
     return Database.buildIndexString(
-      txn.walletId,
       txn.hash,
       txn.customIdentifier,
       txn.coinId,

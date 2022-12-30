@@ -1,6 +1,7 @@
 import IModel from './model';
 
 /**
+ * @deprecated
  * A model to store the coin information. Here, coin refers to the native currency of the network.
  * For example, ETH is the native currency of Ethereum.
  * USDT, USDC are not meant to be stored here. Use TokenDB instead.

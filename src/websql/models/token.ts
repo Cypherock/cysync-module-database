@@ -8,10 +8,14 @@ export default interface Token extends IModel {
   coinId: string;
   parentCoinId: string;
   accountId: string;
+  /**
+   * @deprecated
+   */
   coin?: string;
   /**
+   * @deprecated
    * Uniquer identifier for the token.
    */
-  slug: string;
+  slug?: string;
   balance: string;
 }

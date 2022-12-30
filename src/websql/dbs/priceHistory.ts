@@ -13,8 +13,8 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
    */
   constructor() {
     super('priceHistory', {
-      databaseVersion: 'v2',
-      indexedFields: ['slug', 'coinId']
+      databaseVersion: 'v3',
+      indexedFields: ['coinId']
     });
   }
 
@@ -24,7 +24,6 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
   public async insert(priceHistory: PriceHistory) {
     priceHistory._id = Database.buildIndexString(
       priceHistory.coinId,
-      priceHistory.slug,
       priceHistory.interval
     );
     await super.insert(priceHistory);

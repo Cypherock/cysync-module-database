@@ -10,8 +10,8 @@ import CustomAccount from '../models/customAccount';
 export class CustomAccountDB extends Database<CustomAccount> {
   constructor() {
     super('customAccount', {
-      databaseVersion: 'v1',
-      indexedFields: ['walletId', 'name', 'coin', 'accountId', 'coinId']
+      databaseVersion: 'v2',
+      indexedFields: ['walletId', 'name', 'accountId', 'coinId']
     });
   }
 

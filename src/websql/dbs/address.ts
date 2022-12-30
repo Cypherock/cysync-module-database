@@ -7,8 +7,8 @@ import Address from '../models/address';
 export class AddressDB extends Database<Address> {
   constructor() {
     super('address', {
-      databaseVersion: 'v1',
-      indexedFields: ['walletId', 'slug', 'accountId', 'coinId', 'address']
+      databaseVersion: 'v2',
+      indexedFields: ['walletId', 'accountId', 'coinId', 'address']
     });
   }
 

@@ -7,6 +7,10 @@ enum BIPType {
 export default interface IAddress extends IModel {
   accountId: string;
   coinId: string;
+  /**
+   * @deprecated
+   */
+  coinType?: string;
   address: string;
   walletId: string;
   chainIndex: number;

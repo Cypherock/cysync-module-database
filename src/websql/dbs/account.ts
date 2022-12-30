@@ -11,7 +11,6 @@ export class AccountDB extends Database<Account> {
       enDb,
       indexedFields: [
         'walletId',
-        'slug',
         'accountId',
         'coinId',
         'accountType',
