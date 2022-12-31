@@ -16,5 +16,4 @@ export default interface CustomAccount extends IModel {
    */
   name: string;
   balance: string;
-  price: string;
 }

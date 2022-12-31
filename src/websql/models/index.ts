@@ -8,3 +8,6 @@ export { InputOutput, IOtype } from './inputOutput';
 export { default as Notification } from './notification';
 export { default as Account } from './account';
 export { default as CoinPrice } from './coinPrice';
+export { default as Address } from './address';
+export { default as PriceHistory } from './priceHistory';
+export { default as ReceiveAddress } from './receiveAddress';

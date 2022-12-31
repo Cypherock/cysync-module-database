@@ -18,4 +18,14 @@ export default interface Token extends IModel {
    */
   slug?: string;
   balance: string;
+
+  /**
+   * @deprecated
+   */
+  price?: number;
+
+  /**
+   * @deprecated
+   */
+  priceLastUpdatedAt?: number | undefined;
 }

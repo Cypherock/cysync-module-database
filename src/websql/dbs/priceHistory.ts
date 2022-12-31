@@ -13,7 +13,7 @@ export default class PriceHistoryDB extends Database<PriceHistory> {
    */
   constructor() {
     super('priceHistory', {
-      databaseVersion: 'v3',
+      databaseVersion: 'v2',
       indexedFields: ['coinId']
     });
   }
