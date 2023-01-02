@@ -1,6 +1,7 @@
 import IModel from './model';
 
 export default interface Account extends IModel {
+  name: string;
   accountId?: string;
   walletId: string;
   coinId: string;
