@@ -1,7 +1,9 @@
 import {
   COINS,
   BtcCoinData,
-  BitcoinAccountTypeDetails
+  BitcoinAccountTypeDetails,
+  SolanaCoinData,
+  SolanaAccountTypeDetails
 } from '@cypherock/communication';
 import crypto from 'crypto';
 import { Database } from '../module/database';
@@ -47,6 +49,15 @@ export class AccountDB extends Database<Account> {
     if (account.accountType) {
       if (coin instanceof BtcCoinData) {
         const accountType = BitcoinAccountTypeDetails[account.accountType];
+        if (!accountType) {
+          throw new Error(
+            'Invalid accountType in accountDb: ' + account.accountType
+          );
+        }
+
+        additionalName += accountType.tag;
+      } else if (coin instanceof SolanaCoinData) {
+        const accountType = SolanaAccountTypeDetails[account.accountType];
         if (!accountType) {
           throw new Error(
             'Invalid accountType in accountDb: ' + account.accountType
