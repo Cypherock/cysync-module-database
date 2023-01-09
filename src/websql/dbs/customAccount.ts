@@ -10,27 +10,29 @@ import CustomAccount from '../models/customAccount';
 export class CustomAccountDB extends Database<CustomAccount> {
   constructor() {
     super('customAccount', {
-      databaseVersion: 'v1',
-      indexedFields: ['walletId', 'name', 'coin']
+      databaseVersion: 'v2',
+      indexedFields: ['walletId', 'name', 'accountId', 'coinId']
     });
   }
 
   public async insert(account: CustomAccount): Promise<void> {
-    account._id = this.buildIndexString(
+    account._id = Database.buildIndexString(
       account.walletId,
       account.coin,
-      account.name
+      account.name,
+      account.accountId,
+      account.coinId
     );
     await super.insert(account);
   }
 
   public async updateBalance(options: {
-    walletId: string;
+    accountId: string;
     name: string;
     balance: string;
   }) {
-    const { walletId, name, balance } = options;
-    await this.findAndUpdate({ walletId, name }, { balance });
+    const { accountId, name, balance } = options;
+    await this.findAndUpdate({ accountId, name }, { balance });
   }
 
   public async rebuild(data: CustomAccount[], query: Partial<CustomAccount>) {

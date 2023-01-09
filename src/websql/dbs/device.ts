@@ -10,7 +10,7 @@ export class DeviceDB extends Database<Device> {
   }
 
   public async insert(device: Device) {
-    device._id = this.buildIndexString(device.serial);
+    device._id = Database.buildIndexString(device.serial);
     await super.insert(device);
   }
 

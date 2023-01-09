@@ -7,10 +7,12 @@ enum INTERVAL {
 }
 
 export default interface IPriceHistory extends IModel {
+  coinId: string;
   /**
+   * @deprecated
    * uniquer identifier for the asset.
    */
-  slug: string;
+  slug?: string;
   interval: INTERVAL;
   /**
    * The data points are stored in the format of array of [timestamp, price]

@@ -7,13 +7,13 @@ import ReceiveAddress from '../models/receiveAddress';
 export class ReceiveAddressDB extends Database<ReceiveAddress> {
   constructor() {
     super('receiveAddress', {
-      databaseVersion: 'v1',
-      indexedFields: ['address']
+      databaseVersion: 'v2',
+      indexedFields: ['address', 'accountId', 'coinId']
     });
   }
 
   public async insert(doc: ReceiveAddress) {
-    doc._id = this.buildIndexString(doc.walletId, doc.coinType);
+    doc._id = Database.buildIndexString(doc.accountId);
     await super.insert(doc);
   }
 }

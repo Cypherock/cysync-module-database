@@ -7,13 +7,17 @@ import Address from '../models/address';
 export class AddressDB extends Database<Address> {
   constructor() {
     super('address', {
-      databaseVersion: 'v1',
-      indexedFields: ['walletId', 'slug']
+      databaseVersion: 'v2',
+      indexedFields: ['walletId', 'accountId', 'coinId', 'address']
     });
   }
 
+  public buildIndex(doc: Address) {
+    return Database.buildIndexString(doc.accountId, doc.address);
+  }
+
   public async insert(doc: Address) {
-    doc._id = this.buildIndexString(doc.walletId, doc.coinType);
+    doc._id = this.buildIndex(doc);
     await super.insert(doc);
   }
 
@@ -22,7 +26,7 @@ export class AddressDB extends Database<Address> {
       docs.map(doc => ({
         ...doc,
         databaseVersion: this.databaseVersion,
-        _id: this.buildIndexString(doc.walletId, doc.coinType)
+        _id: this.buildIndex(doc)
       }))
     );
   }
@@ -33,15 +37,14 @@ export class AddressDB extends Database<Address> {
    */
   public async getChainIndex(options: {
     address: string;
-    walletId: string;
-    coinType: string;
+    accountId: string;
   }): Promise<{
     chainIndex: number;
     addressIndex: number;
     isSegwit: boolean;
   } | null> {
-    const { address, walletId, coinType } = options;
-    const all = await this.getOne({ address, walletId, coinType });
+    const { address, accountId } = options;
+    const all = await this.getOne({ address, accountId });
     if (!all) {
       return null;
     }

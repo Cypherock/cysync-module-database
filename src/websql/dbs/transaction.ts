@@ -1,6 +1,5 @@
 import { Database } from '../module/database';
 import Transaction from '../models/transaction';
-import { COINS, CoinGroup } from '@cypherock/communication';
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 1;
 
@@ -14,18 +13,30 @@ export class TransactionDB extends Database<Transaction> {
   public counter = 0;
   constructor() {
     super('transactions', {
-      databaseVersion: 'v2',
-      indexedFields: ['confirmed', 'blockHeight', 'walletId', 'slug']
+      databaseVersion: 'v3',
+      indexedFields: [
+        'confirmed',
+        'blockHeight',
+        'walletId',
+        'coinId',
+        'parentCoinId',
+        'accountId'
+      ]
     });
   }
 
-  public async insert(txn: Transaction) {
-    txn._id = this.buildIndexString(
-      txn.walletId,
-      txn.slug,
+  private buildIndex(txn: Transaction) {
+    return Database.buildIndexString(
       txn.hash,
-      txn.customIdentifier
+      txn.customIdentifier,
+      txn.coinId,
+      txn.parentCoinId,
+      txn.accountId
     );
+  }
+
+  public async insert(txn: Transaction) {
+    txn._id = this.buildIndex(txn);
     await super.insert(txn);
   }
 
@@ -34,12 +45,7 @@ export class TransactionDB extends Database<Transaction> {
       docs.map(txn => ({
         ...txn,
         databaseVersion: this.databaseVersion,
-        _id: this.buildIndexString(
-          txn.walletId,
-          txn.slug,
-          txn.hash,
-          txn.customIdentifier
-        )
+        _id: this.buildIndex(txn)
       }))
     );
   }
@@ -67,19 +73,11 @@ export class TransactionDB extends Database<Transaction> {
         this.db.bulkDocs(updatedResults);
       });
   }
-  private isBtcFork(coinStr: string) {
-    const coin = COINS[coinStr.toLowerCase()];
-    if (!coin) {
-      throw new Error('Invalid coin');
-    }
 
-    return coin.group === CoinGroup.BitcoinForks;
-  }
-  public async blockUTXOS(utxos: any[], slug: string, walletId: string) {
-    if (!this.isBtcFork(slug)) return;
+  public async blockUTXOS(utxos: any[], accountId: string) {
     await Promise.all(
       utxos.map(async input => {
-        const tx = await this.getOne({ hash: input.txId, slug, walletId });
+        const tx = await this.getOne({ hash: input.txId, accountId });
         if (tx) {
           if (tx.blockedInputs === undefined) tx.blockedInputs = [];
           tx.blockedInputs.push(input.vout);
@@ -93,8 +91,7 @@ export class TransactionDB extends Database<Transaction> {
   /**
    * Release all blocked txns if the 20 minutes has passed since the blockage.
    */
-  public async releaseBlockedTxns(slug: string) {
-    if (!this.isBtcFork(slug)) return;
+  public async releaseBlockedTxns() {
     await this.db
       .find({
         selector: {

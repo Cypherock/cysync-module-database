@@ -17,6 +17,24 @@ export enum SentReceive {
  * for BTC-like Transactions where UTXOs are needed. For other networks like ETH, it would be empty/
  */
 export default interface ITransaction extends IModel {
+  accountId: string;
+  /**
+   * If a token txn: Coin Id of parent coin
+   * If not a token txn: Coin Id of the coin
+   */
+  parentCoinId: string;
+
+  /**
+   * If a token txn: Coin Id of token
+   * If not a token txn: Coin Id of the coin
+   */
+  coinId: string;
+
+  /**
+   * true if it's a token txn
+   */
+  isSub: boolean;
+
   hash: string;
   /**
    *  Total = amount transferred + fees
@@ -37,10 +55,12 @@ export default interface ITransaction extends IModel {
    */
   walletName?: string;
   /**
+   * @deprecated
    * uniquer identifier of the crypto asset. Ex: ETH, BTC, USDT, etc.
    */
-  slug: string;
+  slug?: string;
   /**
+   * @deprecated
    * If it's a token transaction, then this would be the coin slug.
    * This is done so as to extend support to other crypto assets like NFTs automatically.
    */

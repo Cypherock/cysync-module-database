@@ -10,22 +10,22 @@ import Token from '../models/token';
 export class TokenDB extends Database<Token> {
   constructor() {
     super('token', {
-      databaseVersion: 'v1',
-      indexedFields: ['walletId', 'slug', 'coin']
+      databaseVersion: 'v2',
+      indexedFields: ['walletId', 'accountId', 'coinId', 'parentCoinId']
     });
   }
 
   public async insert(token: Token): Promise<void> {
-    token._id = this.buildIndexString(token.walletId, token.coin, token.slug);
+    token._id = Database.buildIndexString(token.accountId, token.coinId);
     await super.insert(token);
   }
 
   public async updateBalance(options: {
-    walletId: string;
-    slug: string;
+    coinId: string;
+    accountId: string;
     balance: string;
   }) {
-    const { walletId, slug, balance } = options;
-    await this.findAndUpdate({ walletId, slug }, { balance });
+    const { coinId, accountId, balance } = options;
+    await this.findAndUpdate({ coinId, accountId }, { balance });
   }
 }
