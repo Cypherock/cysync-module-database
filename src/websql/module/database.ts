@@ -24,9 +24,9 @@ export abstract class Database<T> {
   /**
    *  on setting password, these fields would be encrypted
    */
-  protected secretFields = [''];
+  protected secretFields: string[] = [];
   protected fieldIndexMap = new Map<string, string>();
-  protected indexedFields = [''];
+  protected indexedFields: string[] = [];
 
   constructor(
     table: string,
@@ -41,20 +41,25 @@ export abstract class Database<T> {
     this.refEnDb = enDb;
     this.databaseVersion = databaseVersion;
     if (indexedFields) this.indexedFields = indexedFields;
-    this.db = new PouchDB<T>(table, {
+    this.db = this.createDatabase();
+  }
+
+  private createDatabase() {
+    const db = new PouchDB<T>(this.table, {
       adapter: POUCHDB_ADAPTER,
       auto_compaction: true,
       revs_limit: 1
     });
-    this.db.transform({
+    db.transform({
       incoming: (doc: any) => {
         if (
           this.refEnDb &&
           this.refEnDb?.passSet &&
-          doc.isEncrypted === IS_ENCRYPTED.NO
+          this.secretFields.length > 0 &&
+          (doc.isEncrypted === IS_ENCRYPTED.NO || !doc.isEncrypted)
         ) {
           this.secretFields.forEach(field => {
-            doc[field] = enDb!.encryptData(doc[field]);
+            doc[field] = this.refEnDb?.encryptData(doc[field]);
           });
           doc.isEncrypted = IS_ENCRYPTED.YES;
         }
@@ -64,16 +69,19 @@ export abstract class Database<T> {
         if (
           this.refEnDb &&
           this.refEnDb.passSet &&
+          this.secretFields.length > 0 &&
           doc.isEncrypted === IS_ENCRYPTED.YES
         ) {
           this.secretFields.forEach(field => {
-            doc[field] = enDb!.decryptData(doc[field]);
+            doc[field] = this.refEnDb?.decryptData(doc[field]);
           });
           doc.isEncrypted = IS_ENCRYPTED.NO;
         }
         return doc;
       }
     });
+
+    return db;
   }
 
   /**
@@ -202,7 +210,7 @@ export abstract class Database<T> {
       await this.db.bulkDocs(docs);
 
       const deleteFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
-      await this.syncAndResync(undefined, deleteFilter);
+      await this.syncAndResync({ filter: deleteFilter });
     }
 
     this.emit('delete');
@@ -259,30 +267,45 @@ export abstract class Database<T> {
    *
    * @returns a promise that resolves when the sync is complete
    */
-  protected async syncAndResync(
-    runner?: () => Promise<void>,
-    filter?: PouchDB.Replication.ReplicateOptions['filter']
-  ) {
-    const tempDB = new PouchDB('tempDB', { adapter: 'memory' });
+  protected async syncAndResync(params: {
+    beforeStore?: () => Promise<void>;
+    afterStore?: () => Promise<void>;
+    filter?: PouchDB.Replication.ReplicateOptions['filter'];
+  }) {
+    const { beforeStore, afterStore, filter } = params;
+
+    const tempDB = new PouchDB(`tempDB-${this.table}`, { adapter: 'memory' });
     await this.db.replicate.to(tempDB, { filter });
     await this.db.destroy();
 
-    if (runner) await runner();
+    if (beforeStore) await beforeStore();
 
-    this.db = new PouchDB(this.table, { adapter: POUCHDB_ADAPTER });
-    await this.db.replicate.from(tempDB);
+    this.db = this.createDatabase();
+    await tempDB.replicate.to(this.db);
+
+    if (afterStore) await afterStore();
     tempDB.destroy();
   }
 
-  public async encryptSecrets(singleHash: string): Promise<void> {
-    await this.syncAndResync(async () => {
-      this.refEnDb?.setPassHash(singleHash);
+  public async encryptSecrets(newHash: string, oldHash: string): Promise<void> {
+    await this.syncAndResync({
+      beforeStore: async () => {
+        this.refEnDb?.setPassHash(newHash);
+      },
+      afterStore: async () => {
+        this.refEnDb?.setPassHash(oldHash);
+      }
     });
   }
 
-  public async decryptSecrets(): Promise<void> {
-    await this.syncAndResync(async () => {
-      this.refEnDb?.destroyHash();
+  public async decryptSecrets(oldHash: string): Promise<void> {
+    await this.syncAndResync({
+      beforeStore: async () => {
+        this.refEnDb?.destroyHash();
+      },
+      afterStore: async () => {
+        this.refEnDb?.setPassHash(oldHash);
+      }
     });
   }
 

@@ -8,6 +8,7 @@ import crypto from 'crypto';
  * It uses SHA256 algorithm.
  */
 export default class PassEncrypt {
+  private rawPassHash: string = '';
   private passHash: Uint8Array = new Uint8Array(32);
   private idHash: string = '';
   private aesCtr: aesjs.ModeOfOperation.ModeOfOperationCTR =
@@ -34,6 +35,10 @@ export default class PassEncrypt {
 
     this.passSet = true;
     this.passHash = aesjs.utils.utf8.toBytes(passhash.substring(32)); //sha2
+  }
+
+  public getPassHash() {
+    return this.rawPassHash;
   }
 
   public encryptData(data: string) {
