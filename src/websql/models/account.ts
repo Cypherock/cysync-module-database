@@ -15,4 +15,12 @@ export default interface Account extends IModel {
   accountIndex: number;
   totalBalance: string;
   totalUnconfirmedBalance: string;
+  metadata?: Metadata;
+}
+export interface NearMetadata {
+  nativeBalance: string;
+  reservedStorage: string;
+}
+export interface Metadata {
+  near?: NearMetadata;
 }

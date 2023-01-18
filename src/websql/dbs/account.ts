@@ -7,7 +7,7 @@ import {
 } from '@cypherock/communication';
 import crypto from 'crypto';
 import { Database } from '../module/database';
-import Account from '../models/account';
+import Account, { Metadata } from '../models/account';
 import { PassEncrypt } from '.';
 import { IS_ENCRYPTED } from '../models/model';
 
@@ -105,6 +105,14 @@ export class AccountDB extends Database<Account> {
       { accountId },
       { totalBalance, totalUnconfirmedBalance }
     );
+  }
+
+  public async updateMetadata(options: {
+    accountId: string;
+    metadata: Metadata;
+  }): Promise<void> {
+    const { accountId, metadata } = options;
+    await this.findAndUpdate({ accountId }, { metadata });
   }
 
   public async delete(query: Partial<Account>): Promise<void> {
