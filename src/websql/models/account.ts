@@ -13,6 +13,7 @@ export default interface Account extends IModel {
   xpub: string;
   accountType?: string;
   accountIndex: number;
+  derivationPath: string;
   totalBalance: string;
   totalUnconfirmedBalance: string;
   metadata?: Metadata;
