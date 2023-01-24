@@ -35,6 +35,7 @@ export default class PassEncrypt {
 
     this.passSet = true;
     this.passHash = aesjs.utils.utf8.toBytes(passhash.substring(32)); //sha2
+    this.rawPassHash = passhash;
   }
 
   public getPassHash() {
