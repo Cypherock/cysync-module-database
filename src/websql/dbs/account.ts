@@ -1,10 +1,4 @@
-import {
-  COINS,
-  BtcCoinData,
-  BitcoinAccountTypeDetails,
-  SolanaCoinData,
-  SolanaAccountTypeDetails
-} from '@cypherock/communication';
+import { COINS } from '@cypherock/communication';
 import crypto from 'crypto';
 import { Database } from '../module/database';
 import Account, { Metadata } from '../models/account';
@@ -43,48 +37,7 @@ export class AccountDB extends Database<Account> {
 
   public static createAccountName(account: Account) {
     const coin = COINS[account.coinId];
-
-    let additionalName = '';
-
-    if (account.accountType) {
-      if (coin instanceof BtcCoinData) {
-        const accountType = BitcoinAccountTypeDetails[account.accountType];
-        if (!accountType) {
-          throw new Error(
-            'Invalid accountType in accountDb: ' + account.accountType
-          );
-        }
-
-        additionalName += accountType.tag;
-      } else if (coin instanceof SolanaCoinData) {
-        const accountType = SolanaAccountTypeDetails[account.accountType];
-        if (!accountType) {
-          throw new Error(
-            'Invalid accountType in accountDb: ' + account.accountType
-          );
-        }
-
-        additionalName += accountType.tag;
-      } else {
-        throw new Error(
-          'Invalid accountType in accountDb: ' + account.accountType
-        );
-      }
-    }
-
-    if (account.accountIndex && account.accountIndex !== 0) {
-      if (additionalName) {
-        additionalName += ' ';
-      }
-
-      additionalName += account.accountIndex;
-    }
-
-    if (additionalName) {
-      return `${coin.name} ${additionalName}`;
-    }
-
-    return coin.name;
+    return `${coin.name} ${account.accountIndex + 1}`;
   }
 
   public async insert(account: Account) {
