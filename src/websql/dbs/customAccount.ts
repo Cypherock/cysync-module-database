@@ -1,5 +1,6 @@
 import { Database } from '../module/database';
 import CustomAccount from '../models/customAccount';
+import { Metadata } from '../models/account';
 
 /**
  * CustomAccountDB stores the custom account information of near coin of a wallet.
@@ -72,5 +73,14 @@ export class CustomAccountDB extends Database<CustomAccount> {
     );
 
     this.emit('update');
+  }
+
+  public async updateMetadata(options: {
+    accountId: string;
+    name: string;
+    metadata: Metadata;
+  }): Promise<void> {
+    const { accountId, name, metadata } = options;
+    await this.findAndUpdate({ accountId, name }, { metadata });
   }
 }

@@ -1,4 +1,5 @@
 import IModel from './model';
+import { Metadata } from './account';
 
 /**
  * A model to store any other crypto assets like Tokens, NFTs, etc except the native currency of the network.
@@ -16,4 +17,5 @@ export default interface CustomAccount extends IModel {
    */
   name: string;
   balance: string;
+  metadata?: Metadata;
 }
