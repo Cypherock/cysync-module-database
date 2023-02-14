@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { EventEmitter } from 'events';
 import { PassEncrypt } from '../dbs';
 import PouchDB from 'pouchdb';
@@ -273,9 +274,13 @@ export abstract class Database<T> {
     filter?: PouchDB.Replication.ReplicateOptions['filter'];
   }) {
     const { beforeStore, afterStore, filter } = params;
+    const defaultFilter = (doc: { _deleted: any }, _: any) => !doc._deleted;
 
-    const tempDB = new PouchDB(`tempDB-${this.table}`, { adapter: 'memory' });
-    await this.db.replicate.to(tempDB, { filter });
+    const tempDB = new PouchDB(
+      `tempDB-${this.table}-${crypto.randomBytes(8).toString('hex')}`,
+      { adapter: 'memory' }
+    );
+    await this.db.replicate.to(tempDB, { filter: filter || defaultFilter });
     await this.db.destroy();
 
     if (beforeStore) await beforeStore();
@@ -284,7 +289,7 @@ export abstract class Database<T> {
     await tempDB.replicate.to(this.db);
 
     if (afterStore) await afterStore();
-    tempDB.destroy();
+    await tempDB.destroy();
   }
 
   public async encryptSecrets(newHash: string, oldHash: string): Promise<void> {

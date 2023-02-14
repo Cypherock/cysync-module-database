@@ -69,6 +69,6 @@ export class AccountDB extends Database<Account> {
   }
 
   public async delete(query: Partial<Account>): Promise<void> {
-    await super.deleteTruly(query);
+    await super.delete(query);
   }
 }
