@@ -37,7 +37,7 @@ export class AccountDB extends Database<Account> {
 
   public static createAccountName(account: Account) {
     const coin = COINS[account.coinId];
-    return `${coin.name} ${account.accountIndex + 1}`;
+    return `${coin?.name} ${account.accountIndex + 1}`;
   }
 
   public async insert(account: Account) {
