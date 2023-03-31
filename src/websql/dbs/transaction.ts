@@ -1,5 +1,6 @@
 import { Database } from '../module/database';
 import Transaction from '../models/transaction';
+import { FileDB } from '../module/fileDatabase';
 
 const PENDING_TO_FAIL_TIMEOUT_IN_HOURS = 1;
 
@@ -108,5 +109,11 @@ export class TransactionDB extends Database<Transaction> {
         });
         this.db.bulkDocs(updatedResults);
       });
+  }
+}
+
+export class TransactionFileDB extends FileDB {
+  constructor(filePath='data-test.json') {
+    super('transactions', filePath);
   }
 }

@@ -4,6 +4,7 @@ import { Database } from '../module/database';
 import Account, { Metadata } from '../models/account';
 import { PassEncrypt } from '.';
 import { IS_ENCRYPTED } from '../models/model';
+import { FileDB } from '../module/fileDatabase';
 
 export class AccountDB extends Database<Account> {
   constructor(enDb?: PassEncrypt) {
@@ -70,5 +71,16 @@ export class AccountDB extends Database<Account> {
 
   public async delete(query: Partial<Account>): Promise<void> {
     await super.delete(query);
+  }
+}
+
+export class AccountFileDB extends FileDB {
+  constructor(filePath='data-test.json') {
+    super('account', filePath);
+  }
+
+  public async getAccountsByWalletId(walletId: string) {
+    const accounts = await this.getAll();
+    return accounts.filter((account: Account) => account.walletId === walletId);
   }
 }
