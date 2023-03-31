@@ -16,14 +16,18 @@ export class CustomAccountDB extends Database<CustomAccount> {
     });
   }
 
-  public async insert(account: CustomAccount): Promise<void> {
-    account._id = Database.buildIndexString(
+  private buildCustomAccountIndexString(account: CustomAccount): string {
+    return Database.buildIndexString(
       account.walletId,
       account.coin,
       account.name,
       account.accountId,
       account.coinId
     );
+  }
+
+  public async insert(account: CustomAccount): Promise<void> {
+    account._id = this.buildCustomAccountIndexString(account);
     await super.insert(account);
   }
 
@@ -69,7 +73,11 @@ export class CustomAccountDB extends Database<CustomAccount> {
 
     await this.db.bulkDocs(docs);
     await this.insertMany(
-      data.filter((_, index) => !duplicateIndices.includes(index))
+      data
+        .filter((_, index) => !duplicateIndices.includes(index))
+        .map(el => {
+          return { ...el, _id: this.buildCustomAccountIndexString(el) };
+        })
     );
 
     this.emit('update');
