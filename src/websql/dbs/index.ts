@@ -1,4 +1,4 @@
-import { WalletDB } from './wallet';
+import { WalletDB, WalletFileDB } from './wallet';
 import { DeviceDB } from './device';
 import { TokenDB } from './token';
 import { CustomAccountDB } from './customAccount';
@@ -14,6 +14,7 @@ import PriceHistoryDB from './priceHistory';
 
 export {
   WalletDB,
+  WalletFileDB,
   DeviceDB,
   TokenDB,
   CustomAccountDB,
